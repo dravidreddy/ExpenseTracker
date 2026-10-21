@@ -12,6 +12,8 @@
 //   screens/             → All 4 screens
 //   widgets/             → Shared reusable widgets
 
+import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -28,6 +30,68 @@ import 'widgets/bottom_nav.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // ── Global Crash Interception & Error Boundary ───────────────────────────
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(details);
+    debugPrint('Antigravity Captured FlutterError: ${details.exceptionAsString()}');
+  };
+
+  PlatformDispatcher.instance.onError = (error, stack) {
+    debugPrint('Antigravity Captured Async Error: $error\n$stack');
+    return true; // Prevents unhandled async exceptions from killing the process
+  };
+
+  ErrorWidget.builder = (FlutterErrorDetails details) {
+    return Material(
+      color: AppTheme.background,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(
+                Icons.error_outline_rounded,
+                color: Color(0xFFEF4444),
+                size: 48,
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                'Something went wrong',
+                style: TextStyle(
+                  color: AppTheme.onSurface,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              const Text(
+                'Your offline data is safe. Please restart the app.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  color: AppTheme.onSurfaceMuted,
+                  fontSize: 14,
+                ),
+              ),
+              if (!kReleaseMode) ...[
+                const SizedBox(height: 12),
+                Text(
+                  details.exceptionAsString(),
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Color(0xFFEF4444),
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  };
 
   // Lock to portrait
   await SystemChrome.setPreferredOrientations([
