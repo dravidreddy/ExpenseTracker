@@ -1,0 +1,31 @@
+# android/key.properties.template
+#
+# ─── HOW TO SET UP RELEASE SIGNING ──────────────────────────────────────────
+#
+# 1. Generate your upload keystore (run once from the project root):
+#
+#    keytool -genkey -v \
+#      -keystore android/app/upload-keystore.jks \
+#      -keyalg RSA -keysize 2048 -validity 10000 \
+#      -alias antigravity \
+#      -dname "CN=Your Name, OU=App, O=YourOrg, L=City, ST=State, C=IN"
+#
+#    On Windows:
+#    keytool -genkey -v -keystore android\app\upload-keystore.jks -keyalg RSA -keysize 2048 -validity 10000 -alias antigravity
+#
+# 2. Copy this file to android/key.properties:
+#    cp android/key.properties.template android/key.properties
+#
+# 3. Fill in the values below with the password you chose in step 1.
+#
+# 4. IMPORTANT: android/key.properties and android/app/upload-keystore.jks
+#    are already in .gitignore. NEVER commit them to version control.
+#    Back them up securely — losing the keystore means you cannot update
+#    your app on the Play Store.
+#
+# ─────────────────────────────────────────────────────────────────────────────
+
+storePassword=YOUR_KEYSTORE_PASSWORD
+keyPassword=YOUR_KEY_PASSWORD
+keyAlias=antigravity
+storeFile=upload-keystore.jks

@@ -1,0 +1,100 @@
+{
+  "categories": [
+    {
+      "id": "food",
+      "label": "Food",
+      "emoji": "🍔",
+      "color": "#FF6B35",
+      "keywords": [
+        "zomato", "swiggy", "lunch", "dinner", "breakfast", "coffee",
+        "grocery", "groceries", "restaurant", "cafe", "pizza", "burger",
+        "chai", "tea", "milk", "bread", "rice", "dal", "sabzi",
+        "blinkit", "zepto", "instamart", "dunzo", "bigbasket",
+        "food", "eat", "snack", "biryani", "dosa", "idli", "maggi",
+        "juice", "water", "drink", "fruit", "vegetable", "egg", "chicken"
+      ]
+    },
+    {
+      "id": "travel",
+      "label": "Travel",
+      "emoji": "🚕",
+      "color": "#4ECDC4",
+      "keywords": [
+        "uber", "ola", "metro", "flight", "bus", "train", "auto",
+        "rapido", "cab", "taxi", "irctc", "makemytrip", "goibibo",
+        "indigo", "air india", "spicejet", "airport", "ticket",
+        "travel", "trip", "journey", "ferry", "boat", "rickshaw",
+        "lyft", "grab", "toll", "highway"
+      ]
+    },
+    {
+      "id": "bike",
+      "label": "Bike",
+      "emoji": "🛵",
+      "color": "#FFE66D",
+      "keywords": [
+        "petrol", "mechanic", "parking", "tyre", "tire", "service",
+        "bike", "scooter", "motorcycle", "fuel", "engine oil",
+        "puncture", "helmet", "spare", "battery", "chain"
+      ]
+    },
+    {
+      "id": "entertainment",
+      "label": "Fun",
+      "emoji": "🍿",
+      "color": "#A78BFA",
+      "keywords": [
+        "movie", "netflix", "party", "cinema", "pvr", "inox",
+        "spotify", "prime", "hotstar", "disney", "youtube",
+        "game", "gaming", "concert", "show", "event", "bookmyshow",
+        "alcohol", "beer", "wine", "pub", "bar", "club", "night out",
+        "entertainment", "fun", "outing", "bowling", "arcade"
+      ]
+    },
+    {
+      "id": "health",
+      "label": "Health",
+      "emoji": "💊",
+      "color": "#34D399",
+      "keywords": [
+        "medicine", "doctor", "hospital", "pharmacy", "clinic",
+        "gym", "yoga", "fitness", "health", "medical", "tablet",
+        "apollo", "medplus", "1mg", "netmeds", "pharmeasy",
+        "test", "lab", "scan", "consultation", "dentist",
+        "optician", "glasses", "contact lens"
+      ]
+    },
+    {
+      "id": "shopping",
+      "label": "Shopping",
+      "emoji": "🛍️",
+      "color": "#F472B6",
+      "keywords": [
+        "amazon", "flipkart", "myntra", "meesho", "nykaa", "ajio",
+        "shopping", "clothes", "shirt", "shoes", "dress", "jacket",
+        "jeans", "accessories", "watch", "bag", "wallet", "purse",
+        "electronics", "mobile", "laptop", "charger", "earphone",
+        "book", "stationery", "gift", "furniture", "home", "decor"
+      ]
+    },
+    {
+      "id": "bills",
+      "label": "Bills",
+      "emoji": "📱",
+      "color": "#60A5FA",
+      "keywords": [
+        "electricity", "water bill", "gas bill", "rent", "wifi",
+        "internet", "mobile recharge", "recharge", "dth", "broadband",
+        "phone bill", "utility", "bill", "emi", "loan", "insurance",
+        "subscription", "maintenance", "society", "tax"
+      ]
+    },
+    {
+      "id": "misc",
+      "label": "Other",
+      "emoji": "🏷️",
+      "color": "#9CA3AF",
+      "keywords": []
+    }
+  ]
+}
