@@ -9,8 +9,6 @@
     <!-- Required by flutter_secure_storage on some Android versions -->
     <uses-permission android:name="android.permission.VIBRATE" />
 
-    <!-- Required for google_fonts to download fonts on first run -->
-    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:label="Antigravity"

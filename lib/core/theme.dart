@@ -1,6 +1,5 @@
 // lib/core/theme.dart
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 class AppTheme {
   AppTheme._();
@@ -15,61 +14,75 @@ class AppTheme {
   static const Color accent = Color(0xFFE8E8E8);
 
   // ── Typography ────────────────────────────────────────────────────────────
-  static TextTheme _buildTextTheme() => GoogleFonts.outfitTextTheme(
-        ThemeData.dark().textTheme,
-      ).copyWith(
+  static TextStyle outfit({
+    double? fontSize,
+    FontWeight? fontWeight,
+    Color? color,
+    double? letterSpacing,
+    double? height,
+  }) =>
+      TextStyle(
+        fontFamily: 'Outfit',
+        fontSize: fontSize,
+        fontWeight: fontWeight,
+        color: color,
+        letterSpacing: letterSpacing,
+        height: height,
+      );
+
+  static TextTheme _buildTextTheme() => TextTheme(
         // Hero amount
-        displayLarge: GoogleFonts.outfit(
+        displayLarge: outfit(
           fontSize: 64,
           fontWeight: FontWeight.w300,
           color: onSurface,
           letterSpacing: -2,
         ),
         // Monthly total headline
-        displayMedium: GoogleFonts.outfit(
+        displayMedium: outfit(
           fontSize: 40,
           fontWeight: FontWeight.w300,
           color: onSurface,
           letterSpacing: -1.5,
         ),
         // Section headings
-        headlineLarge: GoogleFonts.outfit(
+        headlineLarge: outfit(
           fontSize: 28,
           fontWeight: FontWeight.w500,
           color: onSurface,
           letterSpacing: -0.5,
         ),
-        headlineMedium: GoogleFonts.outfit(
+        headlineMedium: outfit(
           fontSize: 22,
           fontWeight: FontWeight.w400,
           color: onSurface,
         ),
         // List item primary
-        titleLarge: GoogleFonts.outfit(
+        titleLarge: outfit(
           fontSize: 18,
           fontWeight: FontWeight.w500,
           color: onSurface,
         ),
-        titleMedium: GoogleFonts.outfit(
+        titleMedium: outfit(
           fontSize: 16,
           fontWeight: FontWeight.w400,
           color: onSurface,
         ),
         // Body & captions
-        bodyLarge: GoogleFonts.outfit(
+        bodyLarge: outfit(
           fontSize: 16,
           color: onSurface,
         ),
-        bodyMedium: GoogleFonts.outfit(
+        bodyMedium: outfit(
           fontSize: 14,
           color: onSurfaceMuted,
         ),
-        bodySmall: GoogleFonts.outfit(
+        bodySmall: outfit(
           fontSize: 12,
           color: onSurfaceMuted,
           letterSpacing: 0.4,
         ),
-        labelLarge: GoogleFonts.outfit(
+        labelLarge: outfit(
           fontSize: 14,
           fontWeight: FontWeight.w600,
           color: onSurface,
@@ -81,6 +94,7 @@ class AppTheme {
   static ThemeData get dark => ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
+        fontFamily: 'Outfit',
         scaffoldBackgroundColor: background,
         colorScheme: const ColorScheme.dark(
           surface: surface,
@@ -110,7 +124,7 @@ class AppTheme {
             borderRadius: BorderRadius.circular(16),
             borderSide: const BorderSide(color: accent, width: 1.5),
           ),
-          hintStyle: GoogleFonts.outfit(
+          hintStyle: outfit(
             fontSize: 16,
             color: onSurfaceMuted,
           ),
@@ -124,7 +138,7 @@ class AppTheme {
           backgroundColor: background,
           elevation: 0,
           centerTitle: false,
-          titleTextStyle: GoogleFonts.outfit(
+          titleTextStyle: outfit(
             fontSize: 18,
             fontWeight: FontWeight.w500,
             color: onSurface,
@@ -141,3 +155,4 @@ class AppTheme {
         ),
       );
 }
+
