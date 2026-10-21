@@ -4,9 +4,9 @@
 //
 // Layout:
 //  • Top hero: "Today ₹450" in display-large type
-//  • Live category badge updates as user types
+//  • Live category dropdown badge (auto-updates as user types, or 1-tap manual override)
 //  • Amount field (numeric) + Description field (text)
-//  • Animated "+" FAB that morphs and saves the expense
+//  • High-end Island CTA "Add Expense" button with trailing icon-in-button pill
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -19,7 +19,6 @@ import '../data/models/category_meta.dart';
 import '../data/models/expense.dart';
 import '../providers/expense_provider.dart';
 import '../providers/settings_provider.dart';
-import '../widgets/category_badge.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -36,6 +35,7 @@ class _HomeScreenState extends State<HomeScreen>
   final _descFocus = FocusNode();
 
   CategoryMeta? _liveCategory;
+  CategoryMeta? _manualCategoryOverride;
   bool _saving = false;
   DateTime _selectedDate = DateTime.now();
 
@@ -51,7 +51,7 @@ class _HomeScreenState extends State<HomeScreen>
       vsync: this,
       duration: const Duration(milliseconds: 150),
     );
-    _fabScale = Tween<double>(begin: 1, end: 0.92).animate(
+    _fabScale = Tween<double>(begin: 1, end: 0.96).animate(
       CurvedAnimation(parent: _fabAnim, curve: Curves.easeInOut),
     );
 
@@ -86,6 +86,11 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   double? _customDateTotal;
+
+  CategoryMeta get _effectiveCategory =>
+      _manualCategoryOverride ??
+      _liveCategory ??
+      Categorizer.instance.categorize('');
 
   Future<void> _updateDateTotal() async {
     if (_isToday) {
@@ -129,6 +134,32 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
+  void _openCategoryPicker() {
+    HapticFeedback.lightImpact();
+    showModalBottomSheet<CategoryMeta?>(
+      context: context,
+      backgroundColor: Colors.transparent,
+      isScrollControlled: true,
+      builder: (ctx) => _CategoryPickerSheet(
+        currentCategory: _effectiveCategory,
+        isManual: _manualCategoryOverride != null,
+        onCategorySelected: (cat) {
+          setState(() {
+            _manualCategoryOverride = cat;
+          });
+          Navigator.pop(ctx);
+        },
+        onResetToAuto: () {
+          setState(() {
+            _manualCategoryOverride = null;
+            _liveCategory = Categorizer.instance.categorize(_descCtrl.text);
+          });
+          Navigator.pop(ctx);
+        },
+      ),
+    );
+  }
+
   @override
   void dispose() {
     _fabAnim.dispose();
@@ -141,6 +172,7 @@ class _HomeScreenState extends State<HomeScreen>
   }
 
   void _onDescChanged() {
+    if (_manualCategoryOverride != null) return;
     final cat = Categorizer.instance.categorize(_descCtrl.text);
     if (cat.id != _liveCategory?.id) {
       setState(() => _liveCategory = cat);
@@ -167,7 +199,7 @@ class _HomeScreenState extends State<HomeScreen>
     await _fabAnim.forward();
 
     try {
-      final cat = _liveCategory ?? Categorizer.instance.categorize(desc);
+      final cat = _effectiveCategory;
 
       final now = DateTime.now();
       final effectiveDateTime = DateTime(
@@ -193,6 +225,7 @@ class _HomeScreenState extends State<HomeScreen>
       _descCtrl.clear();
       final savedForDate = _selectedDate;
       setState(() {
+        _manualCategoryOverride = null;
         _liveCategory = Categorizer.instance.categorize('');
         _selectedDate = DateTime.now();
         _customDateTotal = null;
@@ -261,8 +294,7 @@ class _HomeScreenState extends State<HomeScreen>
     );
   }
 
-  String _fmt(double v) =>
-      NumberFormat('#,##0.##').format(v);
+  String _fmt(double v) => NumberFormat('#,##0.##').format(v);
 
   @override
   Widget build(BuildContext context) {
@@ -291,24 +323,25 @@ class _HomeScreenState extends State<HomeScreen>
                       _isToday ? expenses.todayTotal : (_customDateTotal ?? 0.0),
                 ),
 
-                const SizedBox(height: 56),
+                const SizedBox(height: 52),
 
-                // ── LIVE CATEGORY & DATE SELECTOR ROW ───────────────────
+                // ── CATEGORY DROPDOWN & DATE SELECTOR ROW ───────────────
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 250),
-                      transitionBuilder: (child, anim) => ScaleTransition(
-                        scale: anim,
-                        child: FadeTransition(opacity: anim, child: child),
-                      ),
-                      child: _liveCategory != null
-                          ? CategoryBadge(
-                              key: ValueKey(_liveCategory!.id),
-                              category: _liveCategory!,
-                            )
-                          : const SizedBox(height: 40),
+                    _CategoryDropdownChip(
+                      category: _effectiveCategory,
+                      isManual: _manualCategoryOverride != null,
+                      onTap: _openCategoryPicker,
+                      onReset: _manualCategoryOverride != null
+                          ? () {
+                              setState(() {
+                                _manualCategoryOverride = null;
+                                _liveCategory = Categorizer.instance
+                                    .categorize(_descCtrl.text);
+                              });
+                            }
+                          : null,
                     ),
                     _DateChip(
                       label: _dateLabel,
@@ -352,16 +385,19 @@ class _HomeScreenState extends State<HomeScreen>
                   focusNode: _descFocus,
                   hintText: 'What was it for?',
                   textStyle: Theme.of(context).textTheme.titleLarge,
+                  textInputAction: TextInputAction.done,
                   onSubmitted: (_) => _saveExpense(),
                 ),
 
-                const SizedBox(height: 40),
+                const SizedBox(height: 36),
 
-                // ── SAVE BUTTON ──────────────────────────────────────────
-                Center(
+                // ── PROMINENT "ADD EXPENSE" CTA BUTTON ────────────────────
+                SizedBox(
+                  width: double.infinity,
+                  height: 58,
                   child: ScaleTransition(
                     scale: _fabScale,
-                    child: _SaveButton(
+                    child: _AddExpenseButton(
                       saving: _saving,
                       onTap: _saveExpense,
                     ),
@@ -446,6 +482,7 @@ class _InputField extends StatelessWidget {
     this.inputFormatters,
     this.prefixText,
     required this.textStyle,
+    this.textInputAction,
     this.onSubmitted,
   });
 
@@ -456,6 +493,7 @@ class _InputField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final String? prefixText;
   final TextStyle? textStyle;
+  final TextInputAction? textInputAction;
   final void Function(String)? onSubmitted;
 
   @override
@@ -464,7 +502,7 @@ class _InputField extends StatelessWidget {
       controller: controller,
       focusNode: focusNode,
       keyboardType: keyboardType ?? TextInputType.text,
-      textInputAction: TextInputAction.next,
+      textInputAction: textInputAction ?? TextInputAction.next,
       inputFormatters: inputFormatters,
       style: textStyle,
       onSubmitted: onSubmitted,
@@ -477,52 +515,350 @@ class _InputField extends StatelessWidget {
   }
 }
 
-class _SaveButton extends StatelessWidget {
-  const _SaveButton({required this.onTap, required this.saving});
+// ─── Prominent Add Expense Button (Agency-Grade Island CTA) ───────────────────
+
+class _AddExpenseButton extends StatelessWidget {
+  const _AddExpenseButton({required this.onTap, required this.saving});
   final VoidCallback onTap;
   final bool saving;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: saving ? null : onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: 72,
-        height: 72,
-        decoration: BoxDecoration(
-          color: saving ? AppTheme.border : AppTheme.onSurface,
-          shape: BoxShape.circle,
-          boxShadow: saving
-              ? []
-              : [
-                  BoxShadow(
-                    color: AppTheme.onSurface.withValues(alpha: 0.12),
-                    blurRadius: 24,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-        ),
-        child: Center(
-          child: saving
-              ? const SizedBox(
-                  width: 24,
-                  height: 24,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: AppTheme.onSurfaceMuted,
-                  ),
-                )
-              : const Icon(
-                  Icons.add_rounded,
-                  color: AppTheme.background,
-                  size: 32,
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(29),
+        boxShadow: saving
+            ? []
+            : [
+                BoxShadow(
+                  color: AppTheme.onSurface.withValues(alpha: 0.1),
+                  blurRadius: 20,
+                  offset: const Offset(0, 6),
                 ),
+              ],
+      ),
+      child: ElevatedButton(
+        onPressed: saving ? null : onTap,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppTheme.onSurface,
+          foregroundColor: AppTheme.background,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(29),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              saving ? 'Adding Expense...' : 'Add Expense',
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                letterSpacing: 0.3,
+              ),
+            ),
+            const SizedBox(width: 14),
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: Colors.black.withValues(alpha: 0.12),
+              ),
+              child: Center(
+                child: saving
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppTheme.background,
+                        ),
+                      )
+                    : const Icon(
+                        Icons.add_rounded,
+                        color: AppTheme.background,
+                        size: 20,
+                      ),
+              ),
+            ),
+          ],
         ),
       ),
     );
   }
 }
+
+// ─── Category Dropdown Chip (Homepage Inline Selector) ─────────────────────────
+
+class _CategoryDropdownChip extends StatelessWidget {
+  const _CategoryDropdownChip({
+    required this.category,
+    required this.isManual,
+    required this.onTap,
+    this.onReset,
+  });
+
+  final CategoryMeta category;
+  final bool isManual;
+  final VoidCallback onTap;
+  final VoidCallback? onReset;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(20),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          color: category.color.withValues(alpha: 0.14),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isManual
+                ? category.color
+                : category.color.withValues(alpha: 0.4),
+            width: isManual ? 1.5 : 1,
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(category.emoji, style: const TextStyle(fontSize: 16)),
+            const SizedBox(width: 8),
+            Text(
+              category.label,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: category.color,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 13,
+                  ),
+            ),
+            if (isManual) ...[
+              const SizedBox(width: 6),
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: category.color,
+                ),
+              ),
+            ],
+            const SizedBox(width: 4),
+            Icon(
+              Icons.keyboard_arrow_down_rounded,
+              size: 16,
+              color: category.color,
+            ),
+            if (onReset != null) ...[
+              const SizedBox(width: 6),
+              GestureDetector(
+                onTap: onReset,
+                child: Icon(
+                  Icons.close_rounded,
+                  size: 14,
+                  color: category.color.withValues(alpha: 0.8),
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Category Picker Bottom Sheet (Interactive Modal) ─────────────────────────
+
+class _CategoryPickerSheet extends StatelessWidget {
+  const _CategoryPickerSheet({
+    required this.currentCategory,
+    required this.isManual,
+    required this.onCategorySelected,
+    required this.onResetToAuto,
+  });
+
+  final CategoryMeta currentCategory;
+  final bool isManual;
+  final ValueChanged<CategoryMeta> onCategorySelected;
+  final VoidCallback onResetToAuto;
+
+  @override
+  Widget build(BuildContext context) {
+    final categories = Categorizer.instance.categories;
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Color(0xFF101010),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Drag handle
+              Center(
+                child: Container(
+                  width: 40,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Sheet Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Select Category',
+                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Override auto-categorization for this expense',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: AppTheme.onSurfaceMuted,
+                            ),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    onPressed: () => Navigator.pop(context),
+                    icon: const Icon(Icons.close_rounded, size: 20),
+                    color: AppTheme.onSurfaceMuted,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 20),
+
+              // Reset to Auto button if currently manual
+              if (isManual) ...[
+                InkWell(
+                  onTap: onResetToAuto,
+                  borderRadius: BorderRadius.circular(14),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceVariant,
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: AppTheme.border),
+                    ),
+                    child: const Row(
+                      children: [
+                        Icon(
+                          Icons.auto_awesome_rounded,
+                          size: 18,
+                          color: AppTheme.accent,
+                        ),
+                        SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            'Reset to Auto-Detection',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w500,
+                              color: AppTheme.onSurface,
+                            ),
+                          ),
+                        ),
+                        Icon(
+                          Icons.refresh_rounded,
+                          size: 16,
+                          color: AppTheme.onSurfaceMuted,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              // Grid of Categories
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 2.6,
+                ),
+                itemCount: categories.length,
+                itemBuilder: (context, i) {
+                  final cat = categories[i];
+                  final isSelected = cat.id == currentCategory.id;
+
+                  return InkWell(
+                    onTap: () {
+                      HapticFeedback.selectionClick();
+                      onCategorySelected(cat);
+                    },
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 14),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? cat.color.withValues(alpha: 0.2)
+                            : AppTheme.surfaceVariant,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: isSelected ? cat.color : AppTheme.border,
+                          width: isSelected ? 1.5 : 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Text(cat.emoji, style: const TextStyle(fontSize: 20)),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              cat.label,
+                              style: TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
+                                color: isSelected ? cat.color : AppTheme.onSurface,
+                              ),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          if (isSelected)
+                            Icon(
+                              Icons.check_rounded,
+                              size: 16,
+                              color: cat.color,
+                            ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Date Chip ────────────────────────────────────────────────────────────────
 
 class _DateChip extends StatelessWidget {
   const _DateChip({
@@ -591,4 +927,3 @@ class _DateChip extends StatelessWidget {
     );
   }
 }
-

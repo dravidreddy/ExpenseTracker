@@ -91,6 +91,16 @@ class DatabaseHelper {
     return db.delete(_tableName, where: 'id = ?', whereArgs: [id]);
   }
 
+  Future<int> updateExpense(Expense expense) async {
+    final db = await database;
+    return db.update(
+      _tableName,
+      expense.toMap(),
+      where: 'id = ?',
+      whereArgs: [expense.id],
+    );
+  }
+
   Future<List<Expense>> getAllExpenses() async {
     final db = await database;
     final rows = await db.query(

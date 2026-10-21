@@ -6,15 +6,16 @@
 // • Keyword Manager per category
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../core/categorizer.dart';
 import '../core/currency.dart';
 import '../core/theme.dart';
-import '../data/models/category_meta.dart';
 import '../providers/settings_provider.dart';
 import '../providers/expense_provider.dart';
 import '../core/export_service.dart';
+import 'teach_antigravity_screen.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -196,18 +197,22 @@ class SettingsScreen extends StatelessWidget {
               const Divider(),
               const SizedBox(height: 32),
 
-              // ── Keyword Manager ─────────────────────────────────────────
-              const _SectionLabel(label: 'Keyword Manager'),
-              const SizedBox(height: 4),
-              Text(
-                'Teach Antigravity your habits.',
-                style: Theme.of(context).textTheme.bodyMedium,
+              // ── Intelligence ───────────────────────────────────────────
+              const _SectionLabel(label: 'Intelligence'),
+              const SizedBox(height: 12),
+              _MenuNavigationTile(
+                icon: Icons.psychology_rounded,
+                title: 'Teach Antigravity',
+                subtitle: 'Train vocabulary, habits & custom dishes',
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => const TeachAntigravityScreen(),
+                    ),
+                  );
+                },
               ),
-              const SizedBox(height: 24),
-
-              ...Categorizer.instance.categories
-                  .where((c) => c.id != 'misc')
-                  .map((cat) => _CategoryKeywordCard(category: cat)),
 
               const SizedBox(height: 40),
               const Divider(),
@@ -410,242 +415,77 @@ class _CurrencySelector extends StatelessWidget {
   }
 }
 
-// ── Category Keyword Card ─────────────────────────────────────────────────────
+// ── Menu Navigation Tile (Double-Bezel Luxury Component) ──────────────────────
 
-class _CategoryKeywordCard extends StatefulWidget {
-  const _CategoryKeywordCard({required this.category});
-  final CategoryMeta category;
+class _MenuNavigationTile extends StatelessWidget {
+  const _MenuNavigationTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
 
-  @override
-  State<_CategoryKeywordCard> createState() => _CategoryKeywordCardState();
-}
-
-class _CategoryKeywordCardState extends State<_CategoryKeywordCard> {
-  bool _expanded = false;
-  final _ctrl = TextEditingController();
-
-  @override
-  void dispose() {
-    _ctrl.dispose();
-    super.dispose();
-  }
-
-  void _addKeyword() {
-    final kw = _ctrl.text.trim().toLowerCase();
-    if (kw.isEmpty) return;
-    final added = Categorizer.instance.addKeyword(widget.category.id, kw);
-    if (added) {
-      _ctrl.clear();
-      setState(() {});
-    } else {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Keyword already exists.'),
-          duration: Duration(seconds: 1),
-        ),
-      );
-    }
-  }
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    // Re-fetch live category to reflect mutations
-    final cat = Categorizer.instance.categories.firstWhere(
-      (c) => c.id == widget.category.id,
-      orElse: () => widget.category,
-    );
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: AppTheme.surfaceVariant,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.border),
-      ),
-      child: Column(
-        children: [
-          // Header row
-          InkWell(
-            borderRadius: BorderRadius.circular(16),
-            onTap: () => setState(() => _expanded = !_expanded),
-            child: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              child: Row(
+    return InkWell(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        onTap();
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+        decoration: BoxDecoration(
+          color: AppTheme.surfaceVariant,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: AppTheme.border),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
+              ),
+              child: Icon(icon, color: AppTheme.onSurface, size: 22),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: cat.color.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Center(
-                      child: Text(cat.emoji,
-                          style: const TextStyle(fontSize: 18)),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Text(
-                      cat.label,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                  ),
                   Text(
-                    '${cat.keywords.length}',
-                    style: Theme.of(context).textTheme.bodyMedium,
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
                   ),
-                  const SizedBox(width: 8),
-                  AnimatedRotation(
-                    turns: _expanded ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 200),
-                    child: const Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      color: AppTheme.onSurfaceMuted,
-                    ),
+                  const SizedBox(height: 3),
+                  Text(
+                    subtitle,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontSize: 12,
+                          color: AppTheme.onSurfaceMuted,
+                        ),
                   ),
                 ],
               ),
             ),
-          ),
-
-          // Expanded content
-          AnimatedSize(
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeInOut,
-            child: _expanded
-                ? Padding(
-                    padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Divider(height: 1),
-                        const SizedBox(height: 16),
-
-                        // Add keyword
-                        Row(
-                          children: [
-                            Expanded(
-                              child: TextField(
-                                controller: _ctrl,
-                                textInputAction: TextInputAction.done,
-                                onSubmitted: (_) => _addKeyword(),
-                                style:
-                                    Theme.of(context).textTheme.bodyLarge,
-                                decoration: InputDecoration(
-                                  hintText: 'Add keyword…',
-                                  contentPadding:
-                                      const EdgeInsets.symmetric(
-                                          horizontal: 14, vertical: 12),
-                                  isDense: true,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                    borderSide: const BorderSide(
-                                        color: AppTheme.border),
-                                  ),
-                                  enabledBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                    borderSide: const BorderSide(
-                                        color: AppTheme.border),
-                                  ),
-                                  focusedBorder: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(10),
-                                    borderSide: const BorderSide(
-                                        color: AppTheme.accent, width: 1.5),
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            GestureDetector(
-                              onTap: _addKeyword,
-                              child: Container(
-                                width: 40,
-                                height: 40,
-                                decoration: BoxDecoration(
-                                  color: AppTheme.onSurface,
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: const Icon(
-                                  Icons.add_rounded,
-                                  color: AppTheme.background,
-                                  size: 20,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-
-                        const SizedBox(height: 16),
-
-                        // Keyword chips
-                        if (cat.keywords.isNotEmpty)
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 8,
-                            children: cat.keywords.map((kw) {
-                              return _KeywordChip(
-                                keyword: kw,
-                                onDelete: () {
-                                  Categorizer.instance
-                                      .removeKeyword(cat.id, kw);
-                                  setState(() {});
-                                },
-                              );
-                            }).toList(),
-                          )
-                        else
-                          Text(
-                            'No custom keywords yet.',
-                            style:
-                                Theme.of(context).textTheme.bodyMedium,
-                          ),
-                      ],
-                    ),
-                  )
-                : const SizedBox.shrink(),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _KeywordChip extends StatelessWidget {
-  const _KeywordChip({required this.keyword, required this.onDelete});
-  final String keyword;
-  final VoidCallback onDelete;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.only(left: 12, right: 4, top: 6, bottom: 6),
-      decoration: BoxDecoration(
-        color: AppTheme.background,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.border),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            keyword,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: AppTheme.onSurface,
-                  fontSize: 13,
-                ),
-          ),
-          const SizedBox(width: 4),
-          GestureDetector(
-            onTap: onDelete,
-            child: const Icon(
-              Icons.close_rounded,
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
               size: 14,
               color: AppTheme.onSurfaceMuted,
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

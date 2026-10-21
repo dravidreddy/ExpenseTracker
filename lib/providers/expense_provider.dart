@@ -51,6 +51,14 @@ class ExpenseProvider extends ChangeNotifier {
     await loadDailyTotals(forDate.year, forDate.month);
   }
 
+  Future<void> updateExpense(Expense expense, DateTime forDate) async {
+    await _db.updateExpense(expense);
+    await refreshToday();
+    await refreshMonthly();
+    await loadDayExpenses(forDate);
+    await loadDailyTotals(forDate.year, forDate.month);
+  }
+
   Future<void> clearAllData() async {
     await _db.clearAllData();
     _todayTotal = 0;

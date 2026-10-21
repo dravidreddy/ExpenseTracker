@@ -6,12 +6,27 @@
       "emoji": "🍔",
       "color": "#FF6B35",
       "keywords": [
-        "zomato", "swiggy", "lunch", "dinner", "breakfast", "coffee",
-        "grocery", "groceries", "restaurant", "cafe", "pizza", "burger",
-        "chai", "tea", "milk", "bread", "rice", "dal", "sabzi",
-        "blinkit", "zepto", "instamart", "dunzo", "bigbasket",
-        "food", "eat", "snack", "biryani", "dosa", "idli", "maggi",
-        "juice", "water", "drink", "fruit", "vegetable", "egg", "chicken"
+        "zomato", "swiggy", "blinkit", "zepto", "instamart", "dunzo", "bigbasket",
+        "lunch", "dinner", "breakfast", "coffee", "tea", "chai", "cafe", "restaurant",
+        "grocery", "groceries", "supermarket", "milk", "bread", "rice", "dal", "sabzi",
+        "fruit", "fruits", "vegetable", "vegetables", "egg", "eggs", "chicken", "meat", "fish",
+        "idly", "idli", "dosa", "masala dosa", "ghee roast", "plain dosa", "rava dosa", "onion dosa", "set dosa",
+        "sambar", "vada", "medu vada", "sambar vada", "uttapam", "pongal", "ven pongal",
+        "khara bath", "kesari bath", "chow chow bath", "poori", "puri", "chole bhature",
+        "parotta", "kothu parotta", "malabar parotta", "bisi bele bath", "curd rice", "lemon rice", "puliyogare",
+        "biryani", "hyderabadi biryani", "dum biryani", "chicken biryani", "mutton biryani", "mandi",
+        "shawarma", "paneer", "tikka", "kebab", "roti", "naan", "butter naan", "kulcha", "thali", "meals",
+        "redbull", "red bull", "monster", "monster energy", "sting", "sting energy", "sting drink",
+        "hell energy", "mountain dew", "thums up", "coca cola", "coke", "pepsi", "sprite", "fanta", "mirinda",
+        "7up", "limca", "maaza", "frooti", "slice", "bovonto", "gatorade", "powerade", "paper boat",
+        "lassi", "buttermilk", "chaas", "badam milk", "falooda", "milkshake", "shake", "smoothie",
+        "cold coffee", "filter coffee", "kaapi", "boost", "horlicks", "bournvita", "green tea", "iced tea", "boba",
+        "pizza", "burger", "sandwich", "maggi", "noodles", "pasta", "fries", "frankie", "roll", "kathi roll",
+        "samosa", "kachori", "pakoda", "bajji", "bonda", "mirchi bajji", "pani puri", "golgappa", "bhel puri",
+        "sev puri", "dahi puri", "chaat", "pav bhaji", "vada pav", "momos", "spring roll", "puff", "egg puff",
+        "cake", "pastry", "brownie", "ice cream", "donut", "croissant", "dessert", "sweet", "sweets", "mithai",
+        "dominos", "mcdonalds", "burger king", "subway", "starbucks", "ccd", "cafe coffee day", "third wave", "blue tokai",
+        "food", "eat", "snack", "snacks", "juice", "water", "drink", "drinks"
       ]
     },
     {
@@ -20,22 +35,22 @@
       "emoji": "🚕",
       "color": "#4ECDC4",
       "keywords": [
-        "uber", "ola", "metro", "flight", "bus", "train", "auto",
-        "rapido", "cab", "taxi", "irctc", "makemytrip", "goibibo",
-        "indigo", "air india", "spicejet", "airport", "ticket",
-        "travel", "trip", "journey", "ferry", "boat", "rickshaw",
-        "lyft", "grab", "toll", "highway"
+        "uber", "ola", "metro", "rapido", "flight", "bus", "train", "auto", "auto rickshaw",
+        "cab", "taxi", "irctc", "makemytrip", "goibibo", "easemytrip", "yatra", "cleartrip",
+        "indigo", "air india", "spicejet", "akasa", "vistara", "airport", "ticket", "tickets",
+        "travel", "trip", "journey", "ferry", "boat", "rickshaw", "lyft", "grab",
+        "toll", "toll gate", "fastag", "highway", "intercity", "driver", "transport"
       ]
     },
     {
       "id": "bike",
-      "label": "Bike",
+      "label": "Vehicle",
       "emoji": "🛵",
       "color": "#FFE66D",
       "keywords": [
-        "petrol", "mechanic", "parking", "tyre", "tire", "service",
-        "bike", "scooter", "motorcycle", "fuel", "engine oil",
-        "puncture", "helmet", "spare", "battery", "chain"
+        "petrol", "diesel", "fuel", "cng", "mechanic", "parking", "tyre", "tire", "service",
+        "bike", "scooter", "motorcycle", "car", "engine oil", "puncture", "helmet", "spare",
+        "battery", "chain", "car wash", "bike wash", "air filling", "alignment", "challan"
       ]
     },
     {
@@ -44,11 +59,11 @@
       "emoji": "🍿",
       "color": "#A78BFA",
       "keywords": [
-        "movie", "netflix", "party", "cinema", "pvr", "inox",
-        "spotify", "prime", "hotstar", "disney", "youtube",
-        "game", "gaming", "concert", "show", "event", "bookmyshow",
-        "alcohol", "beer", "wine", "pub", "bar", "club", "night out",
-        "entertainment", "fun", "outing", "bowling", "arcade"
+        "movie", "netflix", "party", "cinema", "pvr", "inox", "cinepolis", "spotify", "prime",
+        "hotstar", "disney", "youtube", "game", "gaming", "steam", "playstation", "concert",
+        "show", "event", "bookmyshow", "insider", "alcohol", "beer", "wine", "pub", "bar",
+        "club", "night out", "liquor", "cocktail", "entertainment", "fun", "outing", "bowling",
+        "arcade", "amusement park", "resort", "staycation", "billiards", "snooker"
       ]
     },
     {
@@ -57,11 +72,11 @@
       "emoji": "💊",
       "color": "#34D399",
       "keywords": [
-        "medicine", "doctor", "hospital", "pharmacy", "clinic",
-        "gym", "yoga", "fitness", "health", "medical", "tablet",
-        "apollo", "medplus", "1mg", "netmeds", "pharmeasy",
-        "test", "lab", "scan", "consultation", "dentist",
-        "optician", "glasses", "contact lens"
+        "medicine", "doctor", "hospital", "pharmacy", "clinic", "gym", "yoga", "fitness",
+        "health", "medical", "tablet", "tablets", "capsule", "syrup", "apollo", "medplus",
+        "1mg", "netmeds", "pharmeasy", "test", "blood test", "lab", "scan", "mri", "xray",
+        "consultation", "dentist", "optician", "glasses", "spectacles", "lens", "contact lens",
+        "physiotherapy", "protein", "supplement", "creatine", "bandaid", "ointment"
       ]
     },
     {
@@ -70,11 +85,13 @@
       "emoji": "🛍️",
       "color": "#F472B6",
       "keywords": [
-        "amazon", "flipkart", "myntra", "meesho", "nykaa", "ajio",
-        "shopping", "clothes", "shirt", "shoes", "dress", "jacket",
-        "jeans", "accessories", "watch", "bag", "wallet", "purse",
-        "electronics", "mobile", "laptop", "charger", "earphone",
-        "book", "stationery", "gift", "furniture", "home", "decor"
+        "amazon", "flipkart", "myntra", "meesho", "nykaa", "ajio", "tata cliq", "zara", "h&m",
+        "shopping", "clothes", "shirt", "tshirt", "shoes", "sneakers", "dress", "jacket",
+        "jeans", "pants", "trousers", "kurti", "saree", "accessories", "watch", "bag",
+        "wallet", "purse", "backpack", "electronics", "mobile", "phone", "laptop", "charger",
+        "cable", "earphone", "headphones", "airpods", "gadget", "book", "books", "stationery",
+        "gift", "gifts", "perfume", "deodorant", "skincare", "cosmetics", "makeup",
+        "furniture", "home", "decor", "curtain", "bedsheet"
       ]
     },
     {
@@ -83,10 +100,12 @@
       "emoji": "📱",
       "color": "#60A5FA",
       "keywords": [
-        "electricity", "water bill", "gas bill", "rent", "wifi",
-        "internet", "mobile recharge", "recharge", "dth", "broadband",
-        "phone bill", "utility", "bill", "emi", "loan", "insurance",
-        "subscription", "maintenance", "society", "tax"
+        "electricity", "power bill", "bescom", "water bill", "gas bill", "lpg", "cylinder",
+        "rent", "house rent", "room rent", "wifi", "internet", "broadband", "fiber",
+        "mobile recharge", "recharge", "prepaid", "postpaid", "airtel", "jio", "vi", "bsnl",
+        "dth", "tata play", "phone bill", "utility", "bill", "emi", "loan", "credit card",
+        "card bill", "insurance", "lic", "premium", "subscription", "maintenance", "society",
+        "tax", "property tax", "fastag recharge", "tuition", "fee", "fees"
       ]
     },
     {

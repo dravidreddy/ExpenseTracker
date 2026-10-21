@@ -94,6 +94,51 @@ class Categorizer {
                 keywords: [],
               ));
 
+  /// Checks if [word] is already known by exact or partial match.
+  /// Returns the matched CategoryMeta if found, or null if unmapped.
+  CategoryMeta? matchWord(String word) {
+    final normalised = _normalise(word);
+    if (normalised.isEmpty) return null;
+
+    // Check exact keyword match first
+    for (final cat in _categories) {
+      if (cat.id == 'misc') continue;
+      if (cat.keywords.contains(normalised)) {
+        return cat;
+      }
+    }
+
+    // Then check substring
+    for (final cat in _categories) {
+      if (cat.id == 'misc') continue;
+      for (final kw in cat.keywords) {
+        if (normalised.contains(kw) || (kw.length >= 3 && normalised.contains(kw))) {
+          return cat;
+        }
+      }
+    }
+
+    return null;
+  }
+
+  /// Returns true if the exact keyword already exists in any category.
+  bool containsExactKeyword(String word) {
+    final kw = word.trim().toLowerCase();
+    for (final cat in _categories) {
+      if (cat.keywords.contains(kw)) return true;
+    }
+    return false;
+  }
+
+  /// Returns which category currently contains this exact keyword.
+  CategoryMeta? getCategoryForExactKeyword(String word) {
+    final kw = word.trim().toLowerCase();
+    for (final cat in _categories) {
+      if (cat.keywords.contains(kw)) return cat;
+    }
+    return null;
+  }
+
   // ── Keyword Manager ───────────────────────────────────────────────────────
 
   /// Add [keyword] to [categoryId]. Returns true if added (not a duplicate).

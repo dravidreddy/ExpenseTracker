@@ -309,4 +309,43 @@ void main() {
           reason: 'Added list should be sorted');
     });
   });
+
+  // ── 5. South Indian Foods & Energy Drinks ──────────────────────────────────
+
+  group('categorize() — South Indian items & Energy Drinks', () {
+    test('categorizes South Indian breakfast & dishes as food', () async {
+      await _init();
+      expect(Categorizer.instance.categorize('hot idly and vada').id, 'food');
+      expect(Categorizer.instance.categorize('masala dosa breakfast').id, 'food');
+      expect(Categorizer.instance.categorize('ghee roast dosa').id, 'food');
+      expect(Categorizer.instance.categorize('sambar vada').id, 'food');
+      expect(Categorizer.instance.categorize('ven pongal').id, 'food');
+      expect(Categorizer.instance.categorize('malabar parotta').id, 'food');
+      expect(Categorizer.instance.categorize('hyderabadi biryani').id, 'food');
+      expect(Categorizer.instance.categorize('filter coffee kaapi').id, 'food');
+    });
+
+    test('categorizes energy drinks and sodas as food', () async {
+      await _init();
+      expect(Categorizer.instance.categorize('can of redbull').id, 'food');
+      expect(Categorizer.instance.categorize('monster energy drink').id, 'food');
+      expect(Categorizer.instance.categorize('sting drink cold').id, 'food');
+      expect(Categorizer.instance.categorize('mountain dew bottle').id, 'food');
+      expect(Categorizer.instance.categorize('bovonto soda').id, 'food');
+    });
+
+    test('exact keyword and matchWord dictionary query helpers', () async {
+      await _init();
+      expect(Categorizer.instance.containsExactKeyword('redbull'), isTrue);
+      expect(Categorizer.instance.containsExactKeyword('masala dosa'), isTrue);
+      expect(Categorizer.instance.containsExactKeyword('nonexistentdish123'), isFalse);
+
+      expect(Categorizer.instance.getCategoryForExactKeyword('idly')?.id, 'food');
+      expect(Categorizer.instance.getCategoryForExactKeyword('metro')?.id, 'travel');
+
+      expect(Categorizer.instance.matchWord('redbull')?.id, 'food');
+      expect(Categorizer.instance.matchWord('hot idly')?.id, 'food');
+      expect(Categorizer.instance.matchWord('randomalienwordxyz'), isNull);
+    });
+  });
 }

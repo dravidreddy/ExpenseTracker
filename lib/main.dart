@@ -112,15 +112,17 @@ Future<void> main() async {
   // Load keyword dictionary before first frame
   await Categorizer.instance.init();
 
+  final expenseProvider = ExpenseProvider();
+  await expenseProvider.init();
+
+  final settingsProvider = SettingsProvider();
+  await settingsProvider.init();
+
   runApp(
     MultiProvider(
       providers: [
-        ChangeNotifierProvider(
-          create: (_) => ExpenseProvider()..init(),
-        ),
-        ChangeNotifierProvider(
-          create: (_) => SettingsProvider()..init(),
-        ),
+        ChangeNotifierProvider.value(value: expenseProvider),
+        ChangeNotifierProvider.value(value: settingsProvider),
       ],
       child: const AntigravityApp(),
     ),
