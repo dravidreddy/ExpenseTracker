@@ -44,6 +44,7 @@ class Categorizer {
   bool _loaded = false;
 
   static const _prefKey = 'keyword_delta_v1';
+  static const _customCatPrefKey = 'custom_categories_v1';
 
   // ── Initialisation ────────────────────────────────────────────────────────
 
@@ -57,7 +58,10 @@ class Categorizer {
         .map((e) => CategoryMeta.fromJson(e as Map<String, dynamic>))
         .toList();
 
-    // Step 2 – replay persisted user customisations on top.
+    // Step 2 – replay custom categories created by user.
+    await _loadCustomCategories();
+
+    // Step 3 – replay persisted user keyword customisations on top.
     await _loadKeywords();
 
     _loaded = true;
@@ -152,6 +156,9 @@ class Categorizer {
     _categories[idx] = _categories[idx].copyWith(
       keywords: [..._categories[idx].keywords, kw],
     );
+    if (_categories[idx].isCustom) {
+      _saveCustomCategories();
+    }
     _saveKeywords(); // fire-and-forget — never blocks the UI
     return true;
   }
@@ -162,6 +169,9 @@ class Categorizer {
     if (idx == -1) return false;
     final updated = [..._categories[idx].keywords]..remove(keyword);
     _categories[idx] = _categories[idx].copyWith(keywords: updated);
+    if (_categories[idx].isCustom) {
+      _saveCustomCategories();
+    }
     _saveKeywords(); // fire-and-forget — never blocks the UI
     return true;
   }
@@ -173,6 +183,82 @@ class Categorizer {
       await prefs.remove(_prefKey);
       _loaded = false;
       await init();
+    } catch (_) {}
+  }
+
+  // ── Custom Category Manager ────────────────────────────────────────────────
+
+  /// Returns true if the category with [id] is a user-created custom category.
+  bool isCustomCategory(String id) {
+    final cat = _categories.firstWhere((c) => c.id == id, orElse: () => _miscCategory);
+    return cat.isCustom;
+  }
+
+  /// Adds a new custom category. Inserts at the top so user categories take priority.
+  bool addCustomCategory(CategoryMeta category) {
+    if (_categories.any((c) => c.id == category.id)) return false;
+
+    final customCat = category.copyWith(isCustom: true);
+    _categories.insert(0, customCat);
+
+    _saveCustomCategories();
+    return true;
+  }
+
+  /// Updates an existing category (label, emoji, color).
+  bool updateCategory(CategoryMeta updated) {
+    final idx = _categories.indexWhere((c) => c.id == updated.id);
+    if (idx == -1) return false;
+    _categories[idx] = updated;
+    _saveCustomCategories();
+    return true;
+  }
+
+  /// Deletes a custom category (cannot delete 'misc' or built-in system categories).
+  bool deleteCustomCategory(String categoryId) {
+    if (categoryId == 'misc') return false;
+    final idx = _categories.indexWhere((c) => c.id == categoryId);
+    if (idx == -1) return false;
+    _categories.removeAt(idx);
+    _saveCustomCategories();
+    return true;
+  }
+
+  /// Resets custom categories.
+  Future<void> resetCustomCategories() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove(_customCatPrefKey);
+      _loaded = false;
+      await init();
+    } catch (_) {}
+  }
+
+  Future<void> _saveCustomCategories() async {
+    try {
+      final customList = _categories.where((c) => c.isCustom).map((c) => c.toJson()).toList();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_customCatPrefKey, jsonEncode(customList));
+    } catch (_) {}
+  }
+
+  Future<void> _loadCustomCategories() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_customCatPrefKey);
+      if (raw == null || raw.isEmpty) return;
+
+      final list = jsonDecode(raw) as List;
+
+      for (final item in list) {
+        final cat = CategoryMeta.fromJson(item as Map<String, dynamic>).copyWith(isCustom: true);
+        final existingIdx = _categories.indexWhere((c) => c.id == cat.id);
+        if (existingIdx != -1) {
+          _categories[existingIdx] = cat;
+        } else {
+          _categories.insert(0, cat);
+        }
+      }
     } catch (_) {}
   }
 

@@ -227,9 +227,9 @@ class _HomeScreenState extends State<HomeScreen>
       setState(() {
         _manualCategoryOverride = null;
         _liveCategory = Categorizer.instance.categorize('');
-        _selectedDate = DateTime.now();
-        _customDateTotal = null;
+        // Keep _selectedDate active so user can log multiple expenses on that date.
       });
+      await _updateDateTotal();
 
       _showSavedToast(expense, cat, savedForDate);
       HapticFeedback.lightImpact();

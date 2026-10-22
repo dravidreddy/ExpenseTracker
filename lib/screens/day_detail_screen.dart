@@ -28,12 +28,59 @@ class DayDetailScreen extends StatefulWidget {
 }
 
 class _DayDetailScreenState extends State<DayDetailScreen> {
+  late DateTime _currentDate;
+
   @override
   void initState() {
     super.initState();
+    _currentDate = widget.date;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<ExpenseProvider>().loadDayExpenses(widget.date);
+      context.read<ExpenseProvider>().loadDayExpenses(_currentDate);
     });
+  }
+
+  void _shiftDate(int deltaDays) {
+    HapticFeedback.selectionClick();
+    final newDate = _currentDate.add(Duration(days: deltaDays));
+    setState(() => _currentDate = newDate);
+    context.read<ExpenseProvider>().loadDayExpenses(newDate);
+  }
+
+  bool _isFutureDate(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final target = DateTime(date.year, date.month, date.day);
+    return target.isAfter(today);
+  }
+
+  Future<void> _pickTimelineDate() async {
+    HapticFeedback.lightImpact();
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: _currentDate.isAfter(now) ? now : _currentDate,
+      firstDate: DateTime(2020),
+      lastDate: now,
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.dark(
+            primary: AppTheme.accent,
+            onPrimary: AppTheme.background,
+            surface: AppTheme.surfaceVariant,
+            onSurface: AppTheme.onSurface,
+          ),
+          dialogTheme: const DialogThemeData(
+            backgroundColor: AppTheme.surfaceVariant,
+          ),
+        ),
+        child: child!,
+      ),
+    );
+
+    if (picked != null && mounted) {
+      setState(() => _currentDate = picked);
+      await context.read<ExpenseProvider>().loadDayExpenses(picked);
+    }
   }
 
   Future<void> _delete(Expense expense) async {
@@ -45,27 +92,38 @@ class _DayDetailScreenState extends State<DayDetailScreen> {
     if (confirmed == true && mounted) {
       await context
           .read<ExpenseProvider>()
-          .deleteExpense(expense.id!, widget.date);
+          .deleteExpense(expense.id!, _currentDate);
     }
   }
 
   Future<void> _edit(Expense expense) async {
     HapticFeedback.lightImpact();
-    final updated = await showModalBottomSheet<Expense>(
+    final result = await showModalBottomSheet<_EditExpenseResult>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => _EditExpenseSheet(
         expense: expense,
-        date: widget.date,
+        date: _currentDate,
       ),
     );
 
-    if (updated != null && mounted) {
-      await context
-          .read<ExpenseProvider>()
-          .updateExpense(updated, widget.date);
-      HapticFeedback.lightImpact();
+    if (result != null && mounted) {
+      if (result.isDelete) {
+        if (!mounted) return;
+        await context
+            .read<ExpenseProvider>()
+            .deleteExpense(expense.id!, _currentDate);
+        HapticFeedback.mediumImpact();
+      } else if (result.updatedExpense != null) {
+        if (!mounted) return;
+        await context
+            .read<ExpenseProvider>()
+            .updateExpense(result.updatedExpense!, _currentDate);
+        if (!mounted) return;
+        await context.read<ExpenseProvider>().loadDayExpenses(_currentDate);
+        HapticFeedback.lightImpact();
+      }
     }
   }
 
@@ -74,7 +132,7 @@ class _DayDetailScreenState extends State<DayDetailScreen> {
     final provider = context.watch<ExpenseProvider>();
     final symbol = context.watch<SettingsProvider>().symbol;
     final expenses = provider.dayExpenses;
-    final dateLabel = DateFormat('EEEE, MMMM d').format(widget.date);
+    final dateLabel = DateFormat('EEEE, MMMM d').format(_currentDate);
 
     final dayTotal = expenses.fold<double>(0, (s, e) => s + e.amount);
 
@@ -85,7 +143,50 @@ class _DayDetailScreenState extends State<DayDetailScreen> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
           onPressed: () => Navigator.pop(context),
         ),
-        title: Text(dateLabel),
+        title: InkWell(
+          onTap: _pickTimelineDate,
+          borderRadius: BorderRadius.circular(10),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Flexible(
+                  child: Text(
+                    dateLabel,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 4),
+                const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  size: 18,
+                  color: AppTheme.onSurfaceMuted,
+                ),
+              ],
+            ),
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.chevron_left_rounded, size: 24),
+            tooltip: 'Previous day',
+            onPressed: () => _shiftDate(-1),
+          ),
+          IconButton(
+            icon: const Icon(Icons.calendar_month_rounded, size: 19),
+            tooltip: 'Select date',
+            onPressed: _pickTimelineDate,
+          ),
+          IconButton(
+            icon: const Icon(Icons.chevron_right_rounded, size: 24),
+            tooltip: 'Next day',
+            onPressed: _isFutureDate(_currentDate.add(const Duration(days: 1)))
+                ? null
+                : () => _shiftDate(1),
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       body: provider.loading
           ? const Center(
@@ -273,6 +374,14 @@ class _ExpenseTile extends StatelessWidget {
 // Edit Expense Modal Sheet (Double-Bezel Agency Grade)
 // ─────────────────────────────────────────────────────────────────────────────
 
+class _EditExpenseResult {
+  final bool isDelete;
+  final Expense? updatedExpense;
+
+  _EditExpenseResult.update(this.updatedExpense) : isDelete = false;
+  _EditExpenseResult.delete() : isDelete = true, updatedExpense = null;
+}
+
 class _EditExpenseSheet extends StatefulWidget {
   const _EditExpenseSheet({
     required this.expense,
@@ -312,6 +421,74 @@ class _EditExpenseSheetState extends State<_EditExpenseSheet> {
     super.dispose();
   }
 
+  Future<void> _pickExpenseDateTime() async {
+    HapticFeedback.lightImpact();
+    final now = DateTime.now();
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _selectedTimestamp.isAfter(now) ? now : _selectedTimestamp,
+      firstDate: DateTime(2020),
+      lastDate: now,
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.dark(
+            primary: AppTheme.accent,
+            onPrimary: AppTheme.background,
+            surface: AppTheme.surfaceVariant,
+            onSurface: AppTheme.onSurface,
+          ),
+          dialogTheme: const DialogThemeData(
+            backgroundColor: AppTheme.surfaceVariant,
+          ),
+        ),
+        child: child!,
+      ),
+    );
+
+    if (pickedDate == null || !mounted) return;
+
+    final pickedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_selectedTimestamp),
+      builder: (context, child) => Theme(
+        data: Theme.of(context).copyWith(
+          colorScheme: const ColorScheme.dark(
+            primary: AppTheme.accent,
+            onPrimary: AppTheme.background,
+            surface: AppTheme.surfaceVariant,
+            onSurface: AppTheme.onSurface,
+          ),
+          dialogTheme: const DialogThemeData(
+            backgroundColor: AppTheme.surfaceVariant,
+          ),
+        ),
+        child: child!,
+      ),
+    );
+
+    final finalTime = pickedTime ?? TimeOfDay.fromDateTime(_selectedTimestamp);
+    setState(() {
+      _selectedTimestamp = DateTime(
+        pickedDate.year,
+        pickedDate.month,
+        pickedDate.day,
+        finalTime.hour,
+        finalTime.minute,
+      );
+    });
+  }
+
+  Future<void> _delete() async {
+    HapticFeedback.mediumImpact();
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => _DeleteDialog(expense: widget.expense),
+    );
+    if (confirmed == true && mounted) {
+      Navigator.pop(context, _EditExpenseResult.delete());
+    }
+  }
+
   void _save() {
     final amountText = _amountCtrl.text.trim();
     final desc = _descCtrl.text.trim();
@@ -335,7 +512,7 @@ class _EditExpenseSheetState extends State<_EditExpenseSheet> {
       timestamp: _selectedTimestamp.millisecondsSinceEpoch,
     );
 
-    Navigator.pop(context, updated);
+    Navigator.pop(context, _EditExpenseResult.update(updated));
   }
 
   @override
@@ -355,190 +532,281 @@ class _EditExpenseSheetState extends State<_EditExpenseSheet> {
         top: false,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Drag handle
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(2),
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Drag handle
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 20),
+                const SizedBox(height: 20),
 
-              // Sheet Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Edit Expense',
-                    style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.close_rounded, size: 20),
-                    color: AppTheme.onSurfaceMuted,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-
-              // Amount Input
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceVariant,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.border),
-                ),
-                child: Row(
+                // Sheet Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      '$symbol ',
-                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            color: AppTheme.onSurfaceMuted,
-                            fontWeight: FontWeight.w400,
+                      'Edit Expense',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                            fontWeight: FontWeight.w600,
                           ),
                     ),
-                    Expanded(
-                      child: TextField(
-                        controller: _amountCtrl,
-                        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
-                        ],
-                        style: Theme.of(context).textTheme.headlineSmall,
-                        decoration: const InputDecoration(
-                          hintText: '0.00',
-                          border: InputBorder.none,
-                          isDense: true,
-                          contentPadding: EdgeInsets.symmetric(vertical: 8),
-                        ),
-                      ),
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close_rounded, size: 20),
+                      color: AppTheme.onSurfaceMuted,
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(height: 14),
+                const SizedBox(height: 20),
 
-              // Description Input
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppTheme.surfaceVariant,
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: AppTheme.border),
-                ),
-                child: TextField(
-                  controller: _descCtrl,
-                  style: Theme.of(context).textTheme.titleMedium,
-                  decoration: const InputDecoration(
-                    hintText: 'Description',
-                    border: InputBorder.none,
-                    isDense: true,
-                    contentPadding: EdgeInsets.symmetric(vertical: 8),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-
-              // Category Picker Section
-              Text(
-                'Category',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: AppTheme.onSurfaceMuted,
-                      fontSize: 13,
-                    ),
-              ),
-              const SizedBox(height: 10),
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: categories.map((cat) {
-                    final isSelected = cat.id == _selectedCategoryId;
-                    return Padding(
-                      padding: const EdgeInsets.only(right: 8),
-                      child: ChoiceChip(
-                        selected: isSelected,
-                        onSelected: (val) {
-                          if (val) {
-                            setState(() => _selectedCategoryId = cat.id);
-                            HapticFeedback.selectionClick();
-                          }
-                        },
-                        avatar: Text(cat.emoji),
-                        label: Text(cat.label),
-                        selectedColor: cat.color.withValues(alpha: 0.25),
-                        backgroundColor: AppTheme.surfaceVariant,
-                        side: BorderSide(
-                          color: isSelected ? cat.color : AppTheme.border,
-                          width: isSelected ? 1.5 : 1,
-                        ),
-                        labelStyle: TextStyle(
-                          color: isSelected ? AppTheme.onSurface : AppTheme.onSurfaceMuted,
-                          fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                      ),
-                    );
-                  }).toList(),
-                ),
-              ),
-              const SizedBox(height: 28),
-
-              // Save Changes Action Button
-              SizedBox(
-                width: double.infinity,
-                height: 54,
-                child: FilledButton(
-                  onPressed: _save,
-                  style: FilledButton.styleFrom(
-                    backgroundColor: AppTheme.onSurface,
-                    foregroundColor: AppTheme.background,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(27),
-                    ),
+                // Amount Input
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceVariant,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppTheme.border),
                   ),
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Text(
-                        'Save Changes',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.2,
-                        ),
+                      Text(
+                        '$symbol ',
+                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                              color: AppTheme.onSurfaceMuted,
+                              fontWeight: FontWeight.w400,
+                            ),
                       ),
-                      const SizedBox(width: 10),
-                      Container(
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: Colors.black.withValues(alpha: 0.12),
-                        ),
-                        child: const Icon(
-                          Icons.check_rounded,
-                          size: 16,
-                          color: AppTheme.background,
+                      Expanded(
+                        child: TextField(
+                          controller: _amountCtrl,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          inputFormatters: [
+                            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d{0,2}')),
+                          ],
+                          style: Theme.of(context).textTheme.headlineSmall,
+                          decoration: const InputDecoration(
+                            hintText: '0.00',
+                            border: InputBorder.none,
+                            isDense: true,
+                            contentPadding: EdgeInsets.symmetric(vertical: 8),
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
-            ],
+                const SizedBox(height: 14),
+
+                // Description Input
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surfaceVariant,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: AppTheme.border),
+                  ),
+                  child: TextField(
+                    controller: _descCtrl,
+                    style: Theme.of(context).textTheme.titleMedium,
+                    decoration: const InputDecoration(
+                      hintText: 'Description',
+                      border: InputBorder.none,
+                      isDense: true,
+                      contentPadding: EdgeInsets.symmetric(vertical: 8),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 14),
+
+                // Date & Time Selector Tile
+                GestureDetector(
+                  onTap: _pickExpenseDateTime,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                    decoration: BoxDecoration(
+                      color: AppTheme.surfaceVariant,
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(color: AppTheme.border),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppTheme.accent.withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.calendar_today_rounded,
+                            size: 18,
+                            color: AppTheme.accent,
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Date & Time (tap to change)',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: AppTheme.onSurfaceMuted.withValues(alpha: 0.8),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                DateFormat('EEE, MMM d, yyyy  •  h:mm a').format(_selectedTimestamp),
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppTheme.onSurface,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        const Icon(
+                          Icons.edit_calendar_rounded,
+                          size: 18,
+                          color: AppTheme.onSurfaceMuted,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+
+                // Category Picker Section
+                Text(
+                  'Category',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppTheme.onSurfaceMuted,
+                        fontSize: 13,
+                      ),
+                ),
+                const SizedBox(height: 10),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: categories.map((cat) {
+                      final isSelected = cat.id == _selectedCategoryId;
+                      return Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: ChoiceChip(
+                          selected: isSelected,
+                          onSelected: (val) {
+                            if (val) {
+                              setState(() => _selectedCategoryId = cat.id);
+                              HapticFeedback.selectionClick();
+                            }
+                          },
+                          avatar: Text(cat.emoji),
+                          label: Text(cat.label),
+                          selectedColor: cat.color.withValues(alpha: 0.25),
+                          backgroundColor: AppTheme.surfaceVariant,
+                          side: BorderSide(
+                            color: isSelected ? cat.color : AppTheme.border,
+                            width: isSelected ? 1.5 : 1,
+                          ),
+                          labelStyle: TextStyle(
+                            color: isSelected ? AppTheme.onSurface : AppTheme.onSurfaceMuted,
+                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                const SizedBox(height: 28),
+
+                // Save Changes Action Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 54,
+                  child: FilledButton(
+                    onPressed: _save,
+                    style: FilledButton.styleFrom(
+                      backgroundColor: AppTheme.onSurface,
+                      foregroundColor: AppTheme.background,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(27),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text(
+                          'Save Changes',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w600,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Container(
+                          width: 28,
+                          height: 28,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: Colors.black.withValues(alpha: 0.12),
+                          ),
+                          child: const Icon(
+                            Icons.check_rounded,
+                            size: 16,
+                            color: AppTheme.background,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+
+                // Direct Delete Action Button
+                SizedBox(
+                  width: double.infinity,
+                  height: 48,
+                  child: OutlinedButton.icon(
+                    onPressed: _delete,
+                    icon: const Icon(
+                      Icons.delete_outline_rounded,
+                      size: 18,
+                      color: Color(0xFFEF4444),
+                    ),
+                    label: const Text(
+                      'Delete Expense',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFFEF4444),
+                      ),
+                    ),
+                    style: OutlinedButton.styleFrom(
+                      side: const BorderSide(color: Color(0x33EF4444)),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(24),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

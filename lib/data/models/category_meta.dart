@@ -7,6 +7,7 @@ class CategoryMeta {
   final String emoji;
   final Color color;
   final List<String> keywords;
+  final bool isCustom;
 
   const CategoryMeta({
     required this.id,
@@ -14,6 +15,7 @@ class CategoryMeta {
     required this.emoji,
     required this.color,
     required this.keywords,
+    this.isCustom = false,
   });
 
   factory CategoryMeta.fromJson(Map<String, dynamic> json) {
@@ -25,6 +27,7 @@ class CategoryMeta {
       emoji: json['emoji'] as String,
       color: color,
       keywords: List<String>.from(json['keywords'] as List),
+      isCustom: json['isCustom'] as bool? ?? false,
     );
   }
 
@@ -36,16 +39,25 @@ class CategoryMeta {
       'color':
           '#${color.toARGB32().toRadixString(16).substring(2).toUpperCase()}',
       'keywords': keywords,
+      'isCustom': isCustom,
     };
   }
 
-  CategoryMeta copyWith({List<String>? keywords}) {
+  CategoryMeta copyWith({
+    String? id,
+    String? label,
+    String? emoji,
+    Color? color,
+    List<String>? keywords,
+    bool? isCustom,
+  }) {
     return CategoryMeta(
-      id: id,
-      label: label,
-      emoji: emoji,
-      color: color,
+      id: id ?? this.id,
+      label: label ?? this.label,
+      emoji: emoji ?? this.emoji,
+      color: color ?? this.color,
       keywords: keywords ?? this.keywords,
+      isCustom: isCustom ?? this.isCustom,
     );
   }
 }

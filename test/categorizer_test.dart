@@ -18,6 +18,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:antigravity/core/categorizer.dart';
+import 'package:antigravity/data/models/category_meta.dart';
 
 // ── Test utilities ────────────────────────────────────────────────────────────
 
@@ -346,6 +347,98 @@ void main() {
       expect(Categorizer.instance.matchWord('redbull')?.id, 'food');
       expect(Categorizer.instance.matchWord('hot idly')?.id, 'food');
       expect(Categorizer.instance.matchWord('randomalienwordxyz'), isNull);
+    });
+  });
+
+  // ── 6. Custom Categories & Management ─────────────────────────────────────
+
+  group('custom categories management', () {
+    test('can add a custom category and categorize matching items', () async {
+      await _init();
+      const gymCat = CategoryMeta(
+        id: 'cat_gym',
+        label: 'Gym & Fitness',
+        emoji: '🏋️',
+        color: Color(0xFF10B981),
+        keywords: ['gym', 'creatine', 'whey protein', 'dumbbells'],
+        isCustom: true,
+      );
+
+      final added = Categorizer.instance.addCustomCategory(gymCat);
+      expect(added, isTrue);
+      expect(Categorizer.instance.isCustomCategory('cat_gym'), isTrue);
+      expect(Categorizer.instance.isCustomCategory('food'), isFalse);
+
+      expect(Categorizer.instance.categorize('gold gym membership').id, 'cat_gym');
+      expect(Categorizer.instance.categorize('whey protein powder').id, 'cat_gym');
+    });
+
+    test('custom category persists across simulated app restarts', () async {
+      // --- Session 1 ---
+      await _init();
+      const petCat = CategoryMeta(
+        id: 'cat_pets',
+        label: 'Pets',
+        emoji: '🐾',
+        color: Color(0xFFF59E0B),
+        keywords: ['pedigree', 'cat food', 'vet consultation'],
+        isCustom: true,
+      );
+      Categorizer.instance.addCustomCategory(petCat);
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+
+      // --- Session 2 ---
+      _reset();
+      await _init();
+
+      expect(Categorizer.instance.isCustomCategory('cat_pets'), isTrue);
+      expect(Categorizer.instance.categorize('pedigree dog food').id, 'cat_pets');
+    });
+
+    test('can update category metadata', () async {
+      await _init();
+      const customCat = CategoryMeta(
+        id: 'cat_books',
+        label: 'Books',
+        emoji: '📚',
+        color: Color(0xFF3B82F6),
+        keywords: ['kindle', 'novel'],
+        isCustom: true,
+      );
+      Categorizer.instance.addCustomCategory(customCat);
+
+      final updated = customCat.copyWith(label: 'Reading & Books', emoji: '📖');
+      final success = Categorizer.instance.updateCategory(updated);
+      expect(success, isTrue);
+
+      final found = Categorizer.instance.categories.firstWhere((c) => c.id == 'cat_books');
+      expect(found.label, 'Reading & Books');
+      expect(found.emoji, '📖');
+    });
+
+    test('can delete a custom category', () async {
+      await _init();
+      const tempCat = CategoryMeta(
+        id: 'cat_temp',
+        label: 'Temporary',
+        emoji: '⏳',
+        color: Color(0xFFEC4899),
+        keywords: ['temporaryitem'],
+        isCustom: true,
+      );
+      Categorizer.instance.addCustomCategory(tempCat);
+      expect(Categorizer.instance.categories.any((c) => c.id == 'cat_temp'), isTrue);
+
+      final deleted = Categorizer.instance.deleteCustomCategory('cat_temp');
+      expect(deleted, isTrue);
+      expect(Categorizer.instance.categories.any((c) => c.id == 'cat_temp'), isFalse);
+      expect(Categorizer.instance.categorize('temporaryitem').id, 'misc');
+    });
+
+    test('cannot delete misc fallback category', () async {
+      await _init();
+      final deleted = Categorizer.instance.deleteCustomCategory('misc');
+      expect(deleted, isFalse);
     });
   });
 }
