@@ -52,7 +52,7 @@ class _AuthScreenState extends State<AuthScreen> with WidgetsBindingObserver {
     }
   }
 
-  Future<void> _checkAuth({bool forceCredentialFallback = false}) async {
+  Future<void> _checkAuth() async {
     final settings = context.read<SettingsProvider>();
     if (!settings.useBiometrics) {
       if (mounted) {
@@ -90,7 +90,7 @@ class _AuthScreenState extends State<AuthScreen> with WidgetsBindingObserver {
 
       final bool didAuthenticate = await auth.authenticate(
         localizedReason: 'Authenticate to access your Antigravity financial ledger',
-        biometricOnly: forceCredentialFallback ? false : false,
+        biometricOnly: false,
         persistAcrossBackgrounding: true,
       );
 

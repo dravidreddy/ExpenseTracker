@@ -104,7 +104,6 @@ class _DayDetailScreenState extends State<DayDetailScreen> {
       backgroundColor: Colors.transparent,
       builder: (ctx) => _EditExpenseSheet(
         expense: expense,
-        date: _currentDate,
       ),
     );
 
@@ -385,11 +384,9 @@ class _EditExpenseResult {
 class _EditExpenseSheet extends StatefulWidget {
   const _EditExpenseSheet({
     required this.expense,
-    required this.date,
   });
 
   final Expense expense;
-  final DateTime date;
 
   @override
   State<_EditExpenseSheet> createState() => _EditExpenseSheetState();
