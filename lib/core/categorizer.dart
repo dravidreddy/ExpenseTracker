@@ -45,11 +45,16 @@ class Categorizer {
 
   static const _prefKey = 'keyword_delta_v1';
   static const _customCatPrefKey = 'custom_categories_v1';
+  static const _catOverridesPrefKey = 'category_overrides_v1';
+
+  final Map<String, Set<String>> _userTaughtKeywords = {};
 
   // ── Initialisation ────────────────────────────────────────────────────────
 
   Future<void> init() async {
     if (_loaded) return;
+
+    _userTaughtKeywords.clear();
 
     // Step 1 – load bundled defaults.
     final raw = await rootBundle.loadString('assets/data/categories.json');
@@ -61,7 +66,10 @@ class Categorizer {
     // Step 2 – replay custom categories created by user.
     await _loadCustomCategories();
 
-    // Step 3 – replay persisted user keyword customisations on top.
+    // Step 3 – replay category metadata overrides (label, emoji, color).
+    await _loadCategoryOverrides();
+
+    // Step 4 – replay persisted user keyword customisations on top.
     await _loadKeywords();
 
     _loaded = true;
@@ -145,6 +153,19 @@ class Categorizer {
 
   // ── Keyword Manager ───────────────────────────────────────────────────────
 
+  /// Returns the list of keywords specifically taught or added by the user for [categoryId].
+  /// Default built-in keywords from the base dictionary are excluded.
+  List<String> getUserTaughtKeywords(String categoryId) {
+    final cat = _categories.firstWhere((c) => c.id == categoryId, orElse: () => _miscCategory);
+    if (cat.isCustom) {
+      return List<String>.unmodifiable(cat.keywords);
+    }
+    final set = _userTaughtKeywords[categoryId];
+    if (set == null || set.isEmpty) return const [];
+    final list = set.toList()..sort();
+    return List<String>.unmodifiable(list);
+  }
+
   /// Add [keyword] to [categoryId]. Returns true if added (not a duplicate).
   bool addKeyword(String categoryId, String keyword) {
     final idx = _categories.indexWhere((c) => c.id == categoryId);
@@ -156,6 +177,7 @@ class Categorizer {
     _categories[idx] = _categories[idx].copyWith(
       keywords: [..._categories[idx].keywords, kw],
     );
+    _userTaughtKeywords.putIfAbsent(categoryId, () => <String>{}).add(kw);
     if (_categories[idx].isCustom) {
       _saveCustomCategories();
     }
@@ -167,8 +189,10 @@ class Categorizer {
   bool removeKeyword(String categoryId, String keyword) {
     final idx = _categories.indexWhere((c) => c.id == categoryId);
     if (idx == -1) return false;
-    final updated = [..._categories[idx].keywords]..remove(keyword);
+    final kw = keyword.trim().toLowerCase();
+    final updated = [..._categories[idx].keywords]..remove(kw);
     _categories[idx] = _categories[idx].copyWith(keywords: updated);
+    _userTaughtKeywords[categoryId]?.remove(kw);
     if (_categories[idx].isCustom) {
       _saveCustomCategories();
     }
@@ -181,6 +205,7 @@ class Categorizer {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_prefKey);
+      _userTaughtKeywords.clear();
       _loaded = false;
       await init();
     } catch (_) {}
@@ -200,6 +225,7 @@ class Categorizer {
 
     final customCat = category.copyWith(isCustom: true);
     _categories.insert(0, customCat);
+    _userTaughtKeywords[customCat.id] = customCat.keywords.toSet();
 
     _saveCustomCategories();
     return true;
@@ -210,7 +236,11 @@ class Categorizer {
     final idx = _categories.indexWhere((c) => c.id == updated.id);
     if (idx == -1) return false;
     _categories[idx] = updated;
-    _saveCustomCategories();
+    if (updated.isCustom) {
+      _saveCustomCategories();
+    } else {
+      _saveCategoryOverrides();
+    }
     return true;
   }
 
@@ -220,15 +250,18 @@ class Categorizer {
     final idx = _categories.indexWhere((c) => c.id == categoryId);
     if (idx == -1) return false;
     _categories.removeAt(idx);
+    _userTaughtKeywords.remove(categoryId);
     _saveCustomCategories();
     return true;
   }
 
-  /// Resets custom categories.
+  /// Resets custom categories and overrides.
   Future<void> resetCustomCategories() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.remove(_customCatPrefKey);
+      await prefs.remove(_catOverridesPrefKey);
+      _userTaughtKeywords.clear();
       _loaded = false;
       await init();
     } catch (_) {}
@@ -257,6 +290,42 @@ class Categorizer {
           _categories[existingIdx] = cat;
         } else {
           _categories.insert(0, cat);
+        }
+        _userTaughtKeywords[cat.id] = cat.keywords.toSet();
+      }
+    } catch (_) {}
+  }
+
+  Future<void> _saveCategoryOverrides() async {
+    try {
+      final overrides = <String, Map<String, dynamic>>{};
+      for (final cat in _categories.where((c) => !c.isCustom)) {
+        overrides[cat.id] = {
+          'label': cat.label,
+          'emoji': cat.emoji,
+          'color': cat.color.toARGB32(),
+        };
+      }
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_catOverridesPrefKey, jsonEncode(overrides));
+    } catch (_) {}
+  }
+
+  Future<void> _loadCategoryOverrides() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_catOverridesPrefKey);
+      if (raw == null || raw.isEmpty) return;
+      final map = jsonDecode(raw) as Map<String, dynamic>;
+      for (int i = 0; i < _categories.length; i++) {
+        final catId = _categories[i].id;
+        if (map.containsKey(catId)) {
+          final entry = map[catId] as Map<String, dynamic>;
+          _categories[i] = _categories[i].copyWith(
+            label: entry['label'] as String? ?? _categories[i].label,
+            emoji: entry['emoji'] as String? ?? _categories[i].emoji,
+            color: entry['color'] != null ? Color(entry['color'] as int) : _categories[i].color,
+          );
         }
       }
     } catch (_) {}
@@ -326,6 +395,7 @@ class Categorizer {
         }
 
         _categories[i] = _categories[i].copyWith(keywords: keywords);
+        _userTaughtKeywords.putIfAbsent(catId, () => <String>{}).addAll(added);
       }
     } catch (_) {
       // Corrupted prefs — silently fall back to bundled defaults.
@@ -346,6 +416,7 @@ class Categorizer {
   @visibleForTesting
   void resetForTesting() {
     _categories = [];
+    _userTaughtKeywords.clear();
     _loaded = false;
   }
 }

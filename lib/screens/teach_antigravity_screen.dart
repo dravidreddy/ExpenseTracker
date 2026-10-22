@@ -224,6 +224,179 @@ class _TeachAntigravityScreenState extends State<TeachAntigravityScreen> {
     }
   }
 
+  Future<void> _openKeywordOptionsSheet({
+    required String keyword,
+    required CategoryMeta currentCategory,
+  }) async {
+    HapticFeedback.lightImpact();
+    final categories = Categorizer.instance.categories.where((c) => c.id != 'misc').toList();
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 32),
+        decoration: const BoxDecoration(
+          color: Color(0xFF141414),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          border: Border(top: BorderSide(color: Color(0xFF2E2E2E), width: 1)),
+        ),
+        child: SafeArea(
+          top: false,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Drag handle
+              Center(
+                child: Container(
+                  width: 38,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 18),
+
+              // Keyword Header
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: currentCategory.color.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(currentCategory.emoji, style: const TextStyle(fontSize: 22)),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                       crossAxisAlignment: CrossAxisAlignment.start,
+                       children: [
+                         Text(
+                           '"$keyword"',
+                           style: const TextStyle(
+                             fontSize: 18,
+                             fontWeight: FontWeight.w700,
+                             color: AppTheme.onSurface,
+                           ),
+                         ),
+                         const SizedBox(height: 2),
+                         Text(
+                           'Currently taught to ${currentCategory.label}',
+                           style: TextStyle(
+                             fontSize: 12,
+                             color: AppTheme.onSurfaceMuted.withValues(alpha: 0.8),
+                           ),
+                         ),
+                       ],
+                     ),
+                   ),
+                   IconButton(
+                     onPressed: () => Navigator.pop(ctx),
+                     icon: const Icon(Icons.close_rounded, size: 20),
+                     color: AppTheme.onSurfaceMuted,
+                   ),
+                 ],
+               ),
+               const SizedBox(height: 22),
+               const Divider(color: Colors.white12),
+               const SizedBox(height: 14),
+
+               // Reassign Section
+               Text(
+                 'REASSIGN TO ANOTHER CATEGORY',
+                 style: TextStyle(
+                   fontSize: 11,
+                   letterSpacing: 1.2,
+                   fontWeight: FontWeight.w600,
+                   color: AppTheme.onSurfaceMuted.withValues(alpha: 0.8),
+                 ),
+               ),
+               const SizedBox(height: 12),
+               Wrap(
+                 spacing: 8,
+                 runSpacing: 8,
+                 children: categories
+                     .where((c) => c.id != currentCategory.id)
+                     .map((targetCat) {
+                   return ActionChip(
+                     avatar: Text(targetCat.emoji),
+                     label: Text(targetCat.label),
+                     backgroundColor: AppTheme.surfaceVariant,
+                     side: const BorderSide(color: AppTheme.border),
+                     labelStyle: const TextStyle(fontSize: 12, color: AppTheme.onSurface),
+                     onPressed: () {
+                       HapticFeedback.mediumImpact();
+                       Categorizer.instance.removeKeyword(currentCategory.id, keyword);
+                       Categorizer.instance.addKeyword(targetCat.id, keyword);
+                       Navigator.pop(ctx);
+                       setState(() {});
+                       ScaffoldMessenger.of(context).clearSnackBars();
+                       ScaffoldMessenger.of(context).showSnackBar(
+                         SnackBar(
+                           backgroundColor: AppTheme.surfaceVariant,
+                           behavior: SnackBarBehavior.floating,
+                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                           content: Row(
+                             children: [
+                               Text(targetCat.emoji, style: const TextStyle(fontSize: 20)),
+                               const SizedBox(width: 12),
+                               Expanded(
+                                 child: Text(
+                                   'Moved "$keyword" → ${targetCat.label}!',
+                                   style: const TextStyle(color: AppTheme.onSurface, fontWeight: FontWeight.w500),
+                                 ),
+                               ),
+                               const Icon(Icons.check_circle_rounded, color: Color(0xFF34D399), size: 20),
+                             ],
+                           ),
+                         ),
+                       );
+                     },
+                   );
+                 }).toList(),
+               ),
+               const SizedBox(height: 24),
+
+               // Delete action
+               SizedBox(
+                 width: double.infinity,
+                 child: OutlinedButton.icon(
+                   onPressed: () {
+                     HapticFeedback.mediumImpact();
+                     Categorizer.instance.removeKeyword(currentCategory.id, keyword);
+                     Navigator.pop(ctx);
+                     setState(() {});
+                     ScaffoldMessenger.of(context).clearSnackBars();
+                     ScaffoldMessenger.of(context).showSnackBar(
+                       SnackBar(
+                         content: Text('Removed "$keyword" from ${currentCategory.label}.'),
+                         backgroundColor: AppTheme.surfaceVariant,
+                         duration: const Duration(seconds: 2),
+                       ),
+                     );
+                   },
+                   icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Color(0xFFEF4444)),
+                   label: const Text('Delete Keyword', style: TextStyle(color: Color(0xFFEF4444))),
+                   style: OutlinedButton.styleFrom(
+                     side: BorderSide(color: const Color(0xFFEF4444).withValues(alpha: 0.4)),
+                     padding: const EdgeInsets.symmetric(vertical: 12),
+                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                   ),
+                 ),
+               ),
+             ],
+           ),
+         ),
+       ),
+     );
+   }
+
   @override
   Widget build(BuildContext context) {
     final categories = Categorizer.instance.categories.where((c) => c.id != 'misc').toList();
@@ -669,81 +842,167 @@ class _TeachAntigravityScreenState extends State<TeachAntigravityScreen> {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: Categorizer.instance.categories.length,
-                separatorBuilder: (_, __) => const SizedBox(height: 10),
+                separatorBuilder: (_, __) => const SizedBox(height: 12),
                 itemBuilder: (context, i) {
                   final cat = Categorizer.instance.categories[i];
                   final isMisc = cat.id == 'misc';
+                  final taught = Categorizer.instance.getUserTaughtKeywords(cat.id);
 
                   return Container(
+                    padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: AppTheme.surfaceVariant,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(18),
                       border: Border.all(color: AppTheme.border),
                     ),
-                    child: ListTile(
-                      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-                      leading: Container(
-                        width: 42,
-                        height: 42,
-                        decoration: BoxDecoration(
-                          color: cat.color.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: cat.color.withValues(alpha: 0.3)),
-                        ),
-                        child: Center(
-                          child: Text(
-                            cat.emoji,
-                            style: const TextStyle(fontSize: 20),
-                          ),
-                        ),
-                      ),
-                      title: Row(
-                        children: [
-                          Text(
-                            cat.label,
-                            style: const TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              color: AppTheme.onSurface,
-                            ),
-                          ),
-                          if (cat.isCustom) ...[
-                            const SizedBox(width: 8),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Header Row: Emoji, Label, Custom badge, Edit Category button
+                        Row(
+                          children: [
                             Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                              width: 38,
+                              height: 38,
                               decoration: BoxDecoration(
-                                color: cat.color.withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(8),
+                                color: cat.color.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(color: cat.color.withValues(alpha: 0.3)),
                               ),
-                              child: Text(
-                                'Custom',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w600,
-                                  color: cat.color,
-                                ),
+                              child: Center(
+                                child: Text(cat.emoji, style: const TextStyle(fontSize: 18)),
                               ),
                             ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  Flexible(
+                                    child: Text(
+                                      cat.label,
+                                      style: const TextStyle(
+                                        fontSize: 15,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppTheme.onSurface,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  if (cat.isCustom) ...[
+                                    const SizedBox(width: 8),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: cat.color.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(8),
+                                      ),
+                                      child: Text(
+                                        'Custom',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w600,
+                                          color: cat.color,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            if (!isMisc)
+                              IconButton(
+                                icon: const Icon(Icons.edit_outlined, size: 18),
+                                color: AppTheme.onSurfaceMuted,
+                                padding: EdgeInsets.zero,
+                                constraints: const BoxConstraints(),
+                                tooltip: 'Edit category',
+                                onPressed: () => _openEditCategorySheet(cat),
+                              ),
                           ],
-                        ],
-                      ),
-                      subtitle: Text(
-                        isMisc
-                            ? 'Default fallback category'
-                            : '${cat.keywords.length} keyword${cat.keywords.length == 1 ? '' : 's'} mapped',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: AppTheme.onSurfaceMuted.withValues(alpha: 0.8),
                         ),
-                      ),
-                      trailing: isMisc
-                          ? null
-                          : IconButton(
-                              icon: const Icon(Icons.edit_outlined, size: 18),
-                              color: AppTheme.onSurfaceMuted,
-                              onPressed: () => _openEditCategorySheet(cat),
+
+                        // Body: User taught keywords ONLY
+                        if (isMisc) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            'Default fallback category',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppTheme.onSurfaceMuted.withValues(alpha: 0.7),
+                              fontStyle: FontStyle.italic,
                             ),
-                      onTap: isMisc ? null : () => _openEditCategorySheet(cat),
+                          ),
+                        ] else if (taught.isEmpty) ...[
+                          const SizedBox(height: 8),
+                          Text(
+                            'No custom keywords taught yet',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: AppTheme.onSurfaceMuted.withValues(alpha: 0.5),
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ] else ...[
+                          const SizedBox(height: 12),
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 8,
+                            children: taught.map((kw) {
+                              return Container(
+                                decoration: BoxDecoration(
+                                  color: cat.color.withValues(alpha: 0.12),
+                                  borderRadius: BorderRadius.circular(10),
+                                  border: Border.all(color: cat.color.withValues(alpha: 0.3)),
+                                ),
+                                child: Material(
+                                  color: Colors.transparent,
+                                  child: InkWell(
+                                    borderRadius: BorderRadius.circular(10),
+                                    onTap: () => _openKeywordOptionsSheet(keyword: kw, currentCategory: cat),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Text(
+                                            kw,
+                                            style: TextStyle(
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w500,
+                                              color: cat.color,
+                                            ),
+                                          ),
+                                          const SizedBox(width: 6),
+                                          GestureDetector(
+                                            onTap: () {
+                                              HapticFeedback.lightImpact();
+                                              Categorizer.instance.removeKeyword(cat.id, kw);
+                                              setState(() {});
+                                              ScaffoldMessenger.of(context).clearSnackBars();
+                                              ScaffoldMessenger.of(context).showSnackBar(
+                                                SnackBar(
+                                                  content: Text('Removed "$kw" from ${cat.label}.'),
+                                                  backgroundColor: AppTheme.surfaceVariant,
+                                                  duration: const Duration(seconds: 2),
+                                                ),
+                                              );
+                                            },
+                                            child: Icon(
+                                              Icons.close_rounded,
+                                              size: 14,
+                                              color: cat.color.withValues(alpha: 0.7),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ],
+                      ],
                     ),
                   );
                 },

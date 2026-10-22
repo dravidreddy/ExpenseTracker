@@ -440,5 +440,55 @@ void main() {
       final deleted = Categorizer.instance.deleteCustomCategory('misc');
       expect(deleted, isFalse);
     });
+
+    test('getUserTaughtKeywords only returns user-taught keywords, not default dictionary', () async {
+      await _init();
+      // By default, food has many bundled keywords, but user taught 0
+      expect(Categorizer.instance.getUserTaughtKeywords('food'), isEmpty);
+
+      // User teaches a new keyword
+      final added = Categorizer.instance.addKeyword('food', 'churros');
+      expect(added, isTrue);
+      expect(Categorizer.instance.getUserTaughtKeywords('food'), contains('churros'));
+      expect(Categorizer.instance.getUserTaughtKeywords('food').length, 1);
+
+      // User removes the taught keyword
+      Categorizer.instance.removeKeyword('food', 'churros');
+      expect(Categorizer.instance.getUserTaughtKeywords('food'), isEmpty);
+    });
+
+    test('getUserTaughtKeywords returns custom category keywords', () async {
+      await _init();
+      const gymCat = CategoryMeta(
+        id: 'cat_gym',
+        label: 'Fitness',
+        emoji: '🏋️',
+        color: Color(0xFF10B981),
+        keywords: ['creatine', 'whey'],
+        isCustom: true,
+      );
+      Categorizer.instance.addCustomCategory(gymCat);
+      expect(Categorizer.instance.getUserTaughtKeywords('cat_gym'), containsAll(['creatine', 'whey']));
+
+      Categorizer.instance.addKeyword('cat_gym', 'preworkout');
+      expect(Categorizer.instance.getUserTaughtKeywords('cat_gym'), contains('preworkout'));
+    });
+
+    test('renaming a built-in category persists across simulated app restart', () async {
+      // --- Session 1 ---
+      await _init();
+      final foodCat = Categorizer.instance.categories.firstWhere((c) => c.id == 'food');
+      final renamed = foodCat.copyWith(label: 'Meals & Dining', emoji: '🍽️');
+      Categorizer.instance.updateCategory(renamed);
+      await Future<void>.delayed(const Duration(milliseconds: 200));
+
+      // --- Session 2 ---
+      _reset();
+      await _init();
+
+      final updatedFood = Categorizer.instance.categories.firstWhere((c) => c.id == 'food');
+      expect(updatedFood.label, 'Meals & Dining');
+      expect(updatedFood.emoji, '🍽️');
+    });
   });
 }

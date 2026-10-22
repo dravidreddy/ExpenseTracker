@@ -421,7 +421,7 @@ class _EditExpenseSheetState extends State<_EditExpenseSheet> {
     super.dispose();
   }
 
-  Future<void> _pickExpenseDateTime() async {
+  Future<void> _pickDateOnly() async {
     HapticFeedback.lightImpact();
     final now = DateTime.now();
     final pickedDate = await showDatePicker(
@@ -447,6 +447,19 @@ class _EditExpenseSheetState extends State<_EditExpenseSheet> {
 
     if (pickedDate == null || !mounted) return;
 
+    setState(() {
+      _selectedTimestamp = DateTime(
+        pickedDate.year,
+        pickedDate.month,
+        pickedDate.day,
+        _selectedTimestamp.hour,
+        _selectedTimestamp.minute,
+      );
+    });
+  }
+
+  Future<void> _pickTimeOnly() async {
+    HapticFeedback.lightImpact();
     final pickedTime = await showTimePicker(
       context: context,
       initialTime: TimeOfDay.fromDateTime(_selectedTimestamp),
@@ -466,14 +479,15 @@ class _EditExpenseSheetState extends State<_EditExpenseSheet> {
       ),
     );
 
-    final finalTime = pickedTime ?? TimeOfDay.fromDateTime(_selectedTimestamp);
+    if (pickedTime == null || !mounted) return;
+
     setState(() {
       _selectedTimestamp = DateTime(
-        pickedDate.year,
-        pickedDate.month,
-        pickedDate.day,
-        finalTime.hour,
-        finalTime.minute,
+        _selectedTimestamp.year,
+        _selectedTimestamp.month,
+        _selectedTimestamp.day,
+        pickedTime.hour,
+        pickedTime.minute,
       );
     });
   }
@@ -628,63 +642,127 @@ class _EditExpenseSheetState extends State<_EditExpenseSheet> {
                 ),
                 const SizedBox(height: 14),
 
-                // Date & Time Selector Tile
-                GestureDetector(
-                  onTap: _pickExpenseDateTime,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    decoration: BoxDecoration(
-                      color: AppTheme.surfaceVariant,
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(color: AppTheme.border),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
+                // Date & Optional Time Selectors
+                Row(
+                  children: [
+                    // Date Selector
+                    Expanded(
+                      flex: 3,
+                      child: GestureDetector(
+                        onTap: _pickDateOnly,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                           decoration: BoxDecoration(
-                            color: AppTheme.accent.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(10),
+                            color: AppTheme.surfaceVariant,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppTheme.border),
                           ),
-                          child: const Icon(
-                            Icons.calendar_today_rounded,
-                            size: 18,
-                            color: AppTheme.accent,
-                          ),
-                        ),
-                        const SizedBox(width: 14),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                          child: Row(
                             children: [
-                              Text(
-                                'Date & Time (tap to change)',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  color: AppTheme.onSurfaceMuted.withValues(alpha: 0.8),
-                                  fontWeight: FontWeight.w500,
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: AppTheme.accent.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(
+                                  Icons.calendar_today_rounded,
+                                  size: 15,
+                                  color: AppTheme.accent,
                                 ),
                               ),
-                              const SizedBox(height: 2),
-                              Text(
-                                DateFormat('EEE, MMM d, yyyy  •  h:mm a').format(_selectedTimestamp),
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppTheme.onSurface,
+                              const SizedBox(width: 10),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Date',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: AppTheme.onSurfaceMuted.withValues(alpha: 0.8),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      DateFormat('EEE, MMM d, yyyy').format(_selectedTimestamp),
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppTheme.onSurface,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const Icon(
-                          Icons.edit_calendar_rounded,
-                          size: 18,
-                          color: AppTheme.onSurfaceMuted,
-                        ),
-                      ],
+                      ),
                     ),
-                  ),
+                    const SizedBox(width: 10),
+                    // Optional Time Selector
+                    Expanded(
+                      flex: 2,
+                      child: GestureDetector(
+                        onTap: _pickTimeOnly,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                          decoration: BoxDecoration(
+                            color: AppTheme.surfaceVariant,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(color: AppTheme.border),
+                          ),
+                          child: Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.05),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: const Icon(
+                                  Icons.access_time_rounded,
+                                  size: 15,
+                                  color: AppTheme.onSurfaceMuted,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      'Time (Opt)',
+                                      style: TextStyle(
+                                        fontSize: 10,
+                                        color: AppTheme.onSurfaceMuted.withValues(alpha: 0.8),
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      DateFormat('h:mm a').format(_selectedTimestamp),
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppTheme.onSurface,
+                                      ),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
                 const SizedBox(height: 20),
 
