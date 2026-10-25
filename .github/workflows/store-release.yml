@@ -38,16 +38,19 @@ jobs:
 
       - name: Setup Android CMake 3.22.1
         run: |
+          echo "Granting permissions on Android SDK directory..."
+          sudo chown -R $USER:$USER $ANDROID_HOME
           SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
           if [ ! -f "$SDKMANAGER" ]; then
             SDKMANAGER=$(which sdkmanager || echo "")
           fi
-          echo "Installing Android SDK CMake 3.22.1..."
-          echo "y" | $SDKMANAGER --licenses || true
-          echo "y" | $SDKMANAGER --install "cmake;3.22.1"
-          if [ -d "$ANDROID_HOME/cmake/3.22.1/bin" ]; then
-            echo "$ANDROID_HOME/cmake/3.22.1/bin" >> $GITHUB_PATH
-          fi
+          echo "Installing Android SDK CMake 3.22.1 via $SDKMANAGER..."
+          yes | $SDKMANAGER --licenses || true
+          $SDKMANAGER --install "cmake;3.22.1"
+          echo "Verifying CMake binary:"
+          ls -la "$ANDROID_HOME/cmake/3.22.1/bin/cmake"
+          "$ANDROID_HOME/cmake/3.22.1/bin/cmake" --version
+          echo "$ANDROID_HOME/cmake/3.22.1/bin" >> $GITHUB_PATH
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -78,6 +81,12 @@ jobs:
 
       - name: Install dependencies
         run: flutter pub get
+
+      - name: Configure CMake in local.properties
+        run: |
+          echo "cmake.dir=$ANDROID_HOME/cmake/3.22.1" >> android/local.properties
+          echo "Updated local.properties content:"
+          cat android/local.properties
 
       - name: Verify analysis & tests
         run: |
