@@ -1,7 +1,8 @@
 // lib/main.dart
 //
-// ─── Antigravity ─────────────────────────────────────────────────────────────
+// ─── Expense Tracker ──────────────────────────────────────────────────────────
 // Zero-friction, fully offline expense tracker.
+// Clean, minimalist, duo-tone offline finance.
 // Log an expense in under 3 seconds.
 //
 // Architecture:
@@ -34,11 +35,11 @@ Future<void> main() async {
   // ── Global Crash Interception & Error Boundary ───────────────────────────
   FlutterError.onError = (FlutterErrorDetails details) {
     FlutterError.presentError(details);
-    debugPrint('Antigravity Captured FlutterError: ${details.exceptionAsString()}');
+    debugPrint('Expense Tracker Captured FlutterError: ${details.exceptionAsString()}');
   };
 
   PlatformDispatcher.instance.onError = (error, stack) {
-    debugPrint('Antigravity Captured Async Error: $error\n$stack');
+    debugPrint('Expense Tracker Captured Async Error: $error\n$stack');
     return true; // Prevents unhandled async exceptions from killing the process
   };
 
@@ -124,18 +125,18 @@ Future<void> main() async {
         ChangeNotifierProvider.value(value: expenseProvider),
         ChangeNotifierProvider.value(value: settingsProvider),
       ],
-      child: const AntigravityApp(),
+      child: const ExpenseTrackerApp(),
     ),
   );
 }
 
-class AntigravityApp extends StatelessWidget {
-  const AntigravityApp({super.key});
+class ExpenseTrackerApp extends StatelessWidget {
+  const ExpenseTrackerApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Antigravity',
+      title: 'Expense Tracker',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.dark,
       home: const AuthScreen(child: _Shell()),

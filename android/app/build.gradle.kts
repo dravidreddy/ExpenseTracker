@@ -14,7 +14,7 @@ if (keystorePropertiesFile.exists()) {
 }
 
 android {
-    namespace = "com.stormbreaker.expensetracker"
+    namespace = "com.expensetracker.offline"
     compileSdk = 36
     buildToolsVersion = "36.0.0"
     ndkVersion = "28.2.13676358"
@@ -38,7 +38,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.stormbreaker.expensetracker"
+        applicationId = "com.expensetracker.offline"
         minSdk = flutter.minSdkVersion
         targetSdk = 34
         versionCode = flutter.versionCode

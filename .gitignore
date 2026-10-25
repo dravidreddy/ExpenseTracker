@@ -61,4 +61,5 @@ android/key.properties
 *.keystore
 android/app/*.jks
 android/app/*.keystore
+*keystore_base64.txt
 

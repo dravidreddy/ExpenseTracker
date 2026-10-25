@@ -1,7 +1,8 @@
 # 🚀 Google Play Store Listing & Data Safety Package
 
-**Application Name:** Antigravity: Offline Expense Tracker  
-**Package Name:** `com.stormbreaker.expensetracker`  
+**Application Name:** Expense Tracker: Offline Ledger  
+**Developer:** Expense Tracker Team  
+**Package Name:** `com.expensetracker.offline`  
 **Target Category:** Finance / Personal Finance  
 **Content Rating:** Everyone (PEGI 3 / ESRB Everyone)  
 **Binary Path:** [`build/app/outputs/bundle/release/app-release.aab`](file:///c:/Users/dravi/OneDrive/Desktop/ExpenseTracker/build/app/outputs/bundle/release/app-release.aab)  
@@ -13,9 +14,9 @@
 
 ### App Title (30 characters max)
 ```
-Antigravity: Expense Tracker
+Expense Tracker
 ```
-*(28 characters)*
+*(15 characters)*
 
 ### Short Description (80 characters max)
 ```
@@ -25,10 +26,10 @@ Fast, private offline expense tracker with AES-256 encrypted storage. No ads.
 
 ### Full Description (4,000 characters max)
 ```markdown
-Antigravity is a lightning-fast, privacy-first personal expense tracker engineered for speed and absolute confidentiality. Log any expense in under 3 seconds with zero ads, zero tracking, and zero cloud lock-in.
+Expense Tracker is a lightning-fast, privacy-first personal expense tracker engineered for speed and absolute confidentiality. Log any expense in under 3 seconds with zero ads, zero tracking, and zero cloud lock-in.
 
 🛡️ ZERO-NETWORK PRIVACY & LOCAL ENCRYPTION
-Unlike conventional finance apps that sync your confidential spending habits to third-party servers, Antigravity requires NO INTERNET PERMISSION. 
+Unlike conventional finance apps that sync your confidential spending habits to third-party servers, Expense Tracker requires NO INTERNET PERMISSION. 
 • 100% Offline by Design: Your data never leaves your physical device.
 • AES-256 SQLCipher Database: All expense entries and ledger records are locally encrypted using hardware-backed cryptographic keys.
 • Biometric Lock & Device PIN: Secure your financial records with fingerprint/face recognition or device passcode.
@@ -57,7 +58,7 @@ Unlike conventional finance apps that sync your confidential spending habits to 
 • Sleek, dark-mode optimized interface
 • Built for speed, security, and financial peace of mind
 
-Take control of your personal finances with Antigravity.
+Take control of your personal finances with Expense Tracker.
 ```
 
 ---
@@ -96,8 +97,8 @@ All checkboxes (Location, Personal Info, Financial Info, Health, Messages, Photo
 
 | Asset | Dimensions | Format | Requirement |
 |---|---|---|---|
-| **App Icon** | 512 x 512 px | 32-bit PNG (max 1024 KB, no transparency) | High-res version of the emerald delta logo. |
-| **Feature Graphic** | 1024 x 500 px | PNG or JPEG (max 15 MB, no transparency) | Dark gradient banner featuring app name and headline. |
+| **App Icon** | 512 x 512 px | 32-bit PNG (max 1024 KB, no transparency) | High-res version of the Dynamic Coin Track logo. |
+| **Feature Graphic** | 1024 x 500 px | PNG or JPEG (max 15 MB, no transparency) | Dark gradient banner featuring Dynamic Coin Track logo and headline. |
 | **Phone Screenshots** | Min 2, Max 8 (e.g. 1080 x 2400 px or 1080 x 1920 px) | PNG or JPEG | Recommended screens: (1) Home Screen quick entry, (2) Timeline breakdown, (3) Settings & Security. |
 
 ---

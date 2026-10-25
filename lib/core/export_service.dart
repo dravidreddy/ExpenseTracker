@@ -63,7 +63,7 @@ class ExportService {
     
     final backup = {
       'schema_version': 1,
-      'app_id': 'com.stormbreaker.expensetracker',
+      'app_id': 'com.expensetracker.offline',
       'exported_at': DateTime.now().toIso8601String(),
       'currency': currencyCode,
       'expenses': expenses.map((e) => e.toMap()).toList(),
@@ -71,14 +71,14 @@ class ExportService {
     
     final jsonString = const JsonEncoder.withIndent('  ').convert(backup);
     final dir = await getApplicationDocumentsDirectory();
-    final path = '${dir.path}/antigravity_backup_${DateTime.now().millisecondsSinceEpoch}.json';
+    final path = '${dir.path}/expense_tracker_backup_${DateTime.now().millisecondsSinceEpoch}.json';
     final file = File(path);
     await file.writeAsString(jsonString);
     
     await SharePlus.instance.share(
       ShareParams(
         files: [XFile(path)],
-        text: 'Antigravity Financial Ledger Backup',
+        text: 'Expense Tracker Financial Ledger Backup',
       ),
     );
   }

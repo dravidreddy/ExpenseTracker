@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'dart:math';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sqflite_sqlcipher/sqflite.dart';
@@ -6,7 +7,7 @@ import 'package:path/path.dart' as p;
 import '../models/expense.dart';
 
 class DatabaseHelper {
-  static const _dbName = 'antigravity.db';
+  static const _dbName = 'expense_tracker.db';
   static const _dbVersion = 2;
   static const _tableName = 'expenses';
   DatabaseHelper._internal();
@@ -43,7 +44,15 @@ class DatabaseHelper {
 
   Future<Database> _initDatabase() async {
     final dbPath = await getDatabasesPath();
+    final legacyPath = p.join(dbPath, 'antigravity.db');
     final path = p.join(dbPath, _dbName);
+
+    // Seamless legacy migration if previous test database exists
+    if (await databaseExists(legacyPath) && !await databaseExists(path)) {
+      final legacyFile = File(legacyPath);
+      await legacyFile.rename(path);
+    }
+
     final password = await _getEncryptionKey(path);
     
     return openDatabase(

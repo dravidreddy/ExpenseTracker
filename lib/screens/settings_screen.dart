@@ -202,8 +202,8 @@ class SettingsScreen extends StatelessWidget {
               const SizedBox(height: 12),
               _MenuNavigationTile(
                 icon: Icons.psychology_rounded,
-                title: 'Teach Antigravity',
-                subtitle: 'Train vocabulary, habits & custom dishes',
+                title: 'Teach Vocabulary',
+                subtitle: 'Train categorization engine & custom habits',
                 onTap: () {
                   Navigator.push(
                     context,
@@ -254,6 +254,67 @@ class SettingsScreen extends StatelessWidget {
                 ),
               ),
 
+              const SizedBox(height: 40),
+
+              // ── About & Brand Showcase ───────────────────────────────────
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 22),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF0C2A42).withValues(alpha: 0.3),
+                      const Color(0xFF071724).withValues(alpha: 0.6),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: Colors.white.withValues(alpha: 0.08),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(12),
+                      child: Image.asset(
+                        'assets/images/app_logo.png',
+                        height: 64,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Expense Tracker',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppTheme.onSurface,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      'Zero-friction • Offline • v1.0.0',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: AppTheme.onSurfaceMuted.withValues(alpha: 0.9),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Zero-friction. 100% Offline. Pure Confidentiality.',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppTheme.onSurfaceMuted.withValues(alpha: 0.6),
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+
               const SizedBox(height: 60),
             ],
           ),
@@ -277,11 +338,12 @@ class SettingsScreen extends StatelessWidget {
         ),
         content: const SingleChildScrollView(
           child: Text(
-            'Antigravity operates with a strict offline-first, zero-knowledge architecture:\n\n'
+            'Expense Tracker operates with a strict offline-first, zero-knowledge architecture:\n\n'
             '• 100% Local Storage: All expenses are stored locally on your device in an encrypted SQLite database.\n\n'
             '• Biometrics: Fingerprint and screen lock authentication is handled purely on-device via the Android hardware Keystore. The app never accesses raw biometric data.\n\n'
             '• Zero Telemetry: No analytics SDKs, advertising networks, or remote servers exist.\n\n'
-            '• Full Data Erasure: You have absolute control to export or permanently delete your financial records at any time.',
+            '• Full Data Erasure: You have absolute control to export or permanently delete your financial records at any time.\n\n'
+            'Engineered for absolute privacy and speed.',
             style: TextStyle(height: 1.5, fontSize: 14),
           ),
         ),

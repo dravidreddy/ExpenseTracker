@@ -1,8 +1,7 @@
-# Antigravity — Expense Tracker
+# Expense Tracker
 
-> Zero-friction. Fully offline. Log an expense in under 3 seconds.
-
-![Antigravity Screens](C:\Users\dravi\.gemini\antigravity-ide\brain\2fe23c7b-d1e3-40ec-8343-231702e26710\antigravity_mockup_1791258196067.jpg)
+> Zero-friction. Fully offline.
+> Log an expense in under 3 seconds.
 
 ---
 

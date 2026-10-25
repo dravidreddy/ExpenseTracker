@@ -89,7 +89,7 @@ class _AuthScreenState extends State<AuthScreen> with WidgetsBindingObserver {
       }
 
       final bool didAuthenticate = await auth.authenticate(
-        localizedReason: 'Authenticate to access your Antigravity financial ledger',
+        localizedReason: 'Authenticate to access your Expense Tracker ledger',
         biometricOnly: false,
         persistAcrossBackgrounding: true,
       );
@@ -201,38 +201,36 @@ class _AuthScreenState extends State<AuthScreen> with WidgetsBindingObserver {
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Machined Icon Badge with Glow Aura
+                        // Stormbreaker App Icon Badge with Glow Aura
                         Container(
-                          width: 80,
-                          height: 80,
+                          width: 84,
+                          height: 84,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: Colors.white.withValues(alpha: 0.04),
                             border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.12),
-                              width: 1,
+                              color: Colors.white.withValues(alpha: 0.15),
+                              width: 1.5,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: AppTheme.accent.withValues(alpha: 0.08),
+                                color: Colors.white.withValues(alpha: 0.08),
                                 blurRadius: 24,
-                                spreadRadius: 4,
+                                spreadRadius: 2,
                               ),
                             ],
                           ),
-                          child: const Center(
-                            child: Icon(
-                              Icons.lock_rounded,
-                              size: 36,
-                              color: AppTheme.onSurface,
+                          child: ClipOval(
+                            child: Image.asset(
+                              'assets/images/app_icon.png',
+                              fit: BoxFit.cover,
                             ),
                           ),
                         ),
-                        const SizedBox(height: 28),
+                        const SizedBox(height: 24),
 
                         // Title & Subtitle
                         Text(
-                          'Antigravity Locked',
+                          'Expense Tracker Locked',
                           textAlign: TextAlign.center,
                           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                                 fontWeight: FontWeight.w600,

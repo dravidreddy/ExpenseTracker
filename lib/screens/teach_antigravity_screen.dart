@@ -82,7 +82,7 @@ class _TeachAntigravityScreenState extends State<TeachAntigravityScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: Text(
-                  'Antigravity learned "$word" → ${category.label}!',
+                  'Expense Tracker learned "$word" → ${category.label}!',
                   style: const TextStyle(color: AppTheme.onSurface, fontWeight: FontWeight.w500),
                 ),
               ),
@@ -408,7 +408,7 @@ class _TeachAntigravityScreenState extends State<TeachAntigravityScreen> {
           icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 18),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Teach Antigravity'),
+        title: const Text('Teach Vocabulary'),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -428,7 +428,7 @@ class _TeachAntigravityScreenState extends State<TeachAntigravityScreen> {
               ),
               const SizedBox(height: 8),
               Text(
-                'Teach Antigravity',
+                'Teach Vocabulary',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.w700,
                     ),
@@ -553,7 +553,7 @@ class _TeachAntigravityScreenState extends State<TeachAntigravityScreen> {
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        'Type any item above. If Antigravity recognizes it, we\'ll display its category. If not, tap any category below to immediately teach it!',
+                        'Type any item above. If Expense Tracker recognizes it, we\'ll display its category. If not, tap any category below to immediately teach it!',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: AppTheme.onSurfaceMuted,
                               height: 1.4,
@@ -641,7 +641,7 @@ class _TeachAntigravityScreenState extends State<TeachAntigravityScreen> {
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  'Antigravity maps "$_currentQuery" to ${_matchedCategory!.label}',
+                                  'Expense Tracker maps "$_currentQuery" to ${_matchedCategory!.label}',
                                   style: const TextStyle(
                                     color: AppTheme.onSurface,
                                     fontSize: 13,
