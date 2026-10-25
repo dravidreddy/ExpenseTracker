@@ -218,7 +218,7 @@ Open **Settings → Keyword Manager**, tap any category, type a keyword, press *
 ## Contact & Support
 
 For questions, concerns, or feature suggestions:
-- **Developer:** Dravid Reddy
+- **Developer:** Dravid Sharath Reddy
 - **Email:** [dravidreddy.ai@gmail.com](mailto:dravidreddy.ai@gmail.com)
 - **Issues:** [https://github.com/dravidreddy/ExpenseTracker/issues](https://github.com/dravidreddy/ExpenseTracker/issues)
 

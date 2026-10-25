@@ -2,7 +2,7 @@
 
 **Last Updated:** October 25, 2026  
 **Application:** Expense Tracker: Minimal & Offline (`com.expensetracker.offline`)  
-**Developer:** Dravid Reddy  
+**Developer:** Dravid Sharath Reddy  
 **Developer Contact:** [dravidreddy.ai@gmail.com](mailto:dravidreddy.ai@gmail.com)  
 **Project Repository:** [github.com/dravidreddy/ExpenseTracker](https://github.com/dravidreddy/ExpenseTracker)
 

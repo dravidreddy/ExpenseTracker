@@ -7,7 +7,7 @@ This document contains all pre-written, verified copy and metadata fields ready 
 ## 1. Universal URLs & Developer Contact
 
 - **Developer Name:**  
-  `Dravid Reddy`
+  `Dravid Sharath Reddy`
 - **Developer Contact Email (Mandatory on Google Play & App Store):**  
   `dravidreddy.ai@gmail.com`
 - **Hosted Privacy Policy URL:**  
