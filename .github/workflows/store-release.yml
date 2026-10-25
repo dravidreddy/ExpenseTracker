@@ -36,6 +36,19 @@ jobs:
           java-version: '17'
           cache: 'gradle'
 
+      - name: Setup Android CMake 3.22.1
+        run: |
+          SDKMANAGER="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          if [ ! -f "$SDKMANAGER" ]; then
+            SDKMANAGER=$(which sdkmanager || echo "")
+          fi
+          echo "Installing Android SDK CMake 3.22.1..."
+          echo "y" | $SDKMANAGER --licenses || true
+          echo "y" | $SDKMANAGER --install "cmake;3.22.1"
+          if [ -d "$ANDROID_HOME/cmake/3.22.1/bin" ]; then
+            echo "$ANDROID_HOME/cmake/3.22.1/bin" >> $GITHUB_PATH
+          fi
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
