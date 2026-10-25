@@ -311,6 +311,14 @@ class SettingsScreen extends StatelessWidget {
                         letterSpacing: 0.5,
                       ),
                     ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Support: dravidreddy.ai@gmail.com',
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: AppTheme.onSurfaceMuted.withValues(alpha: 0.8),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -343,7 +351,7 @@ class SettingsScreen extends StatelessWidget {
             '• Biometrics: Fingerprint and screen lock authentication is handled purely on-device via the Android hardware Keystore. The app never accesses raw biometric data.\n\n'
             '• Zero Telemetry: No analytics SDKs, advertising networks, or remote servers exist.\n\n'
             '• Full Data Erasure: You have absolute control to export or permanently delete your financial records at any time.\n\n'
-            'Engineered for absolute privacy and speed.',
+            'Contact & Suggestions:\ndravidreddy.ai@gmail.com',
             style: TextStyle(height: 1.5, fontSize: 14),
           ),
         ),

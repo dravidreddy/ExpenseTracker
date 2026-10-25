@@ -4,8 +4,12 @@ This document contains all pre-written, verified copy and metadata fields ready 
 
 ---
 
-## 1. Universal URLs
+## 1. Universal URLs & Developer Contact
 
+- **Developer Name:**  
+  `Dravid Reddy`
+- **Developer Contact Email (Mandatory on Google Play & App Store):**  
+  `dravidreddy.ai@gmail.com`
 - **Hosted Privacy Policy URL:**  
   `https://dravidreddy.github.io/ExpenseTracker/`  
   *(Enabled via GitHub Pages on `/docs` folder)*

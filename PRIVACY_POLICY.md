@@ -3,7 +3,8 @@
 **Last Updated:** October 25, 2026  
 **Application:** Expense Tracker: Minimal & Offline (`com.expensetracker.offline`)  
 **Developer:** Dravid Reddy  
-**Contact:** [dravidreddy on GitHub](https://github.com/dravidreddy/ExpenseTracker)
+**Developer Contact:** [dravidreddy.ai@gmail.com](mailto:dravidreddy.ai@gmail.com)  
+**Project Repository:** [github.com/dravidreddy/ExpenseTracker](https://github.com/dravidreddy/ExpenseTracker)
 
 ---
 
@@ -80,5 +81,6 @@ Because Expense Tracker operates 100% offline and collects no data, updates to t
 
 ### 9. Contact & Support
 
-If you have any questions or feedback regarding this Privacy Policy, please open an issue on the official project repository:  
-👉 **[https://github.com/dravidreddy/ExpenseTracker](https://github.com/dravidreddy/ExpenseTracker)**
+For questions, concerns, feedback, or feature suggestions regarding Expense Tracker, please contact the developer directly:  
+- **Email:** [dravidreddy.ai@gmail.com](mailto:dravidreddy.ai@gmail.com)  
+- **GitHub Issues:** [https://github.com/dravidreddy/ExpenseTracker/issues](https://github.com/dravidreddy/ExpenseTracker/issues)
