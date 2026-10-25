@@ -7,6 +7,18 @@ import 'package:share_plus/share_plus.dart';
 import '../data/database/database_helper.dart';
 
 class ExportService {
+  /// Sanitizes text to prevent CSV Formula Injection (CWE-1236)
+  /// when opening exported files in spreadsheet software.
+  static dynamic _sanitizeCsvField(dynamic value) {
+    if (value is String && value.isNotEmpty) {
+      final first = value[0];
+      if (first == '=' || first == '+' || first == '-' || first == '@' || first == '\t' || first == '\r') {
+        return "'$value";
+      }
+    }
+    return value;
+  }
+
   static Future<void> exportExpensesToCsv() async {
     final expenses = await DatabaseHelper.instance.getAllExpenses();
     
@@ -17,8 +29,8 @@ class ExportService {
       rows.add([
         e.id,
         e.amount,
-        e.description,
-        e.category,
+        _sanitizeCsvField(e.description),
+        _sanitizeCsvField(e.category),
         e.dateTime.toIso8601String(),
       ]);
     }
@@ -112,13 +124,24 @@ class ExportService {
     final db = await DatabaseHelper.instance.database;
     await db.transaction((txn) async {
       for (final item in expenseMaps) {
-        if (item is Map<String, dynamic>) {
-          final map = Map<String, dynamic>.from(item)..remove('id');
-          if (map.containsKey('amount') &&
-              map.containsKey('description') &&
-              map.containsKey('category') &&
-              map.containsKey('timestamp')) {
-            await txn.insert('expenses', map);
+        if (item is Map) {
+          final raw = Map<String, dynamic>.from(item);
+          final amount = raw['amount'];
+          final description = raw['description'];
+          final category = raw['category'];
+          final timestamp = raw['timestamp'];
+
+          if (amount is num &&
+              amount.isFinite &&
+              description is String &&
+              category is String &&
+              timestamp is int) {
+            await txn.insert('expenses', {
+              'amount': amount.toDouble(),
+              'description': description,
+              'category': category,
+              'timestamp': timestamp,
+            });
             count++;
           }
         }
