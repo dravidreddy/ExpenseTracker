@@ -153,17 +153,31 @@ Fallback: if no match → "misc" 🏷️
 
 ---
 
+## Key Features & Security Architecture
+
+- **100% Offline & Private:** Zero network requests. The Android app does not even request `android.permission.INTERNET`.
+- **256-Bit SQLCipher Encryption:** The local SQLite database is encrypted at rest using 256-bit AES encryption with keys managed in hardware Keystore / iOS Keychain.
+- **Biometric Security:** Optional Face ID, Touch ID, or Android Biometric authentication via native OS Secure Enclave.
+- **Offline Auto-Categorization:** Real-time client-side keyword matching with customizable dictionary.
+- **Data Portability:** 1-tap instant CSV spreadsheet export via standard system share sheets.
+- **Multi-Currency:** Dynamic currency selector supporting USD ($), EUR (€), GBP (£), INR (₹), JPY (¥), and more.
+- **Bundled Typography:** Self-hosted Outfit variable font assets (zero reliance on Google Fonts CDN at runtime).
+
+---
+
 ## Dependencies
 
 | Package | Purpose |
 |---------|---------|
-| `sqflite` | Local SQLite database |
-| `path` | DB path construction |
-| `provider` | Lightweight state management |
-| `google_fonts` | Outfit typeface |
-| `flutter_slidable` | Swipe-to-delete gesture |
-| `intl` | Date/number formatting |
-| `shared_preferences` | Persist currency setting |
+| `sqflite_sqlcipher` | 256-bit AES encrypted local SQLite database |
+| `flutter_secure_storage` | Hardware-backed key management (Keystore/Keychain) |
+| `local_auth` | Native Face ID / Fingerprint biometric authentication |
+| `path` | Local database path resolution |
+| `provider` | Reactive state management |
+| `flutter_slidable` | Intuitive swipe-to-delete interactions |
+| `intl` | Currency and date formatting |
+| `shared_preferences` | Local preferences persistence |
+| `csv` & `share_plus` | Local CSV file generation and system export |
 
 ---
 
@@ -177,7 +191,7 @@ Fallback: if no match → "misc" 🏷️
 | Border | `#2A2A2A` |
 | Text Primary | `#F5F5F5` |
 | Text Muted | `#6B7280` |
-| Font | Outfit (Google Fonts) |
+| Font | Outfit (Bundled Variable TTF) |
 | Display Size | 64px / weight 300 |
 
 ---
